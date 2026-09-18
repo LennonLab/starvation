@@ -7,7 +7,7 @@
 #   fig_<p>_mean_sd.pdf         per-strain mean +/- SD over the six curve fits
 #
 # All three carry the manuscript's nested group brackets: mutation (sinR,
-# slrC), cell type (Spore, Total), and origin (Ancestor, Evolved).
+# ywcC), cell type (Spore, Total), and origin (Ancestor, Evolved).
 #
 # Input : output/posteriors.rds        (R/01_bayes_fitness.R)
 #         data/comp_data_annotated.csv (R/91_build_comp_data.R)

@@ -12,7 +12,7 @@ Posterior median with a 95% equal-tailed credible interval, from eight replicate
 | m21 | Evolved | Vegetative | sinR | 0.0666 [0.0458, 0.0967] | 0.71 [0.46, 1.07] |
 | m41 | Evolved | Vegetative | sinR | 0.0443 [0.0275, 0.0711] | 0.47 [0.28, 0.78] |
 | m54 | Evolved | Vegetative | sinR | 0.0216 [0.0164, 0.0285] | 0.23 [0.16, 0.32] |
-| m4 | Evolved | Vegetative | slrC | 0.7715 [0.4831, 1.2261] | 8.18 [4.95, 13.54] |
-| m13 | Evolved | Vegetative | slrC | 0.1225 [0.1000, 0.1501] | 1.30 [0.98, 1.72] |
-| m79 | Evolved | Vegetative | slrC | 1.2753 [1.0595, 1.5332] | 13.53 [10.41, 17.61] |
+| m4 | Evolved | Vegetative | ywcC | 0.7715 [0.4831, 1.2261] | 8.18 [4.95, 13.54] |
+| m13 | Evolved | Vegetative | ywcC | 0.1225 [0.1000, 0.1501] | 1.30 [0.98, 1.72] |
+| m79 | Evolved | Vegetative | ywcC | 1.2753 [1.0595, 1.5332] | 13.53 [10.41, 17.61] |
 

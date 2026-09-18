@@ -9,7 +9,7 @@
 # legacy     = the name in the lab's own workbooks
 locus_tag,preferred,refseq,legacy,uniprot,note
 BSU_22920,ypeB,sleC,ypeB,P38490,"RefSeq calls this sleC but B. subtilis has no sleC - the cortex-lytic enzymes are SleB and CwlJ. UniProt P38490 is YpeB, and sleB (BSU_22930) is immediately downstream: this is the bicistronic ypeB-sleB operon. Keep ypeB."
-BSU_38220,slrC,slrC,ywcC,P39601,"Genuine rename. Product is the transcriptional regulator of slrA. Cite as slrC (ywcC) at first mention - the lab records and the 2016-era literature use ywcC."
+BSU_38220,ywcC,slrC,ywcC,P39601,"RefSeq renamed this to slrC and the rename is genuine - the product is the transcriptional regulator of slrA. Displayed as ywcC anyway: that is the name this regulatory network is known by, and slrC sits one letter from slrA and slrR, which appear in the same sentences. Cite as ywcC (BSU_38220) at first mention."
 BSU_15120,bshC,bshC,yllA,P55342,"Genuine rename; bacillithiol biosynthesis."
 BSU_28540,fadB,fadB,ysiB,P94549,"Genuine rename; enoyl-CoA hydratase."
 BSU_34470,aspP,aspP,yveA,P54596,"Genuine rename; L-aspartate/L-glutamate permease. The endpoint spore call at 3,539,121 is intergenic and the workbooks label it levB-yveA; displayed as levB-aspP."

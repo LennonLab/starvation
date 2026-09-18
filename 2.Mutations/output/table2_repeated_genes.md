@@ -5,5 +5,5 @@ Endpoint total fraction. Variants in the same gene carried by the same clone and
 | Gene | Locus tag | Length (bp) | Independent events | Expected | P (Poisson) | P (family-wise) |
 | :--- | :--- | ---: | ---: | ---: | :--- | :--- |
 | sinR | BSU_24610 | 336 | 5 | 0.0024 | 6.23e-16 | <5e-05 |
-| slrC | BSU_38220 | 672 | 2 | 0.0047 | 1.12e-05 | 0.00855 |
+| ywcC | BSU_38220 | 672 | 2 | 0.0047 | 1.12e-05 | 0.00855 |
 

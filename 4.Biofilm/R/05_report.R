@@ -128,7 +128,7 @@ t3 <- data.frame(
   Origin   = meta$origin,
   Cells    = ifelse(is.na(meta$cell), "–", meta$cell),
   # mutation_full already carries current names; see MUTATION_LABEL in 00_setup
-  Mutation = c(ancestor = "–", sinR = "sinR", slrC = "slrC",
+  Mutation = c(ancestor = "–", sinR = "sinR", ywcC = "ywcC",
                spore = "sporulation")[meta$mutation_full],
   check.names = FALSE
 )
@@ -207,7 +207,7 @@ methods <- c(
     "test, so each element of β is one group's mean on the log scale. Priors",
     "were β ~ Normal(0, 100) and inverse-Gamma(0.01, 0.01) on both variances.",
     "Candidate groupings were: a single global mean; ancestor vs. evolved;",
-    "spore vs. vegetative; and mutation identity (*sinR*, *slrC* -- labelled",
+    "spore vs. vegetative; and mutation identity (*sinR*, *ywcC* (BSU_38220) -- labelled",
     "*ywcC/slrR* in the assay file --",
     "sporulation mutant). Mutation vs. no mutation is the same partition as",
     "ancestor vs. evolved on this strain set and was not fit separately.",

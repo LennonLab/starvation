@@ -13,7 +13,7 @@
 # or upstream of slrR" -- and compares:
 #
 #   sinR              m17, m19, m21, m41, m54
-#   slrC/epsA-slrR    m4, m13, m79        (the draft writes ywcC/epsA-slrR)
+#   ywcC/epsA-slrR    m4, m13, m79        (BSU_38220; RefSeq now calls it slrC)
 #   spore             m23, m26
 #
 # "Upstream of slrR" is the intergenic epsA-slrR variant at 3,529,981 -- the
@@ -47,7 +47,7 @@ biofilm <- read.csv(file.path(DATA_DIR, "biofil.csv"), stringsAsFactors = FALSE)
 
 GROUPS <- list(
   sinR             = c("m17", "m19", "m21", "m41", "m54"),
-  `slrC/epsA-slrR` = c("m4", "m13", "m79"),
+  `ywcC/epsA-slrR` = c("m4", "m13", "m79"),
   spore            = c("m23", "m26"))
 
 assign_groups <- function(d) {
@@ -154,7 +154,7 @@ write_md(as.data.frame(summary_tbl %>%
          paste0(
            "Blank-corrected OD550 from `data/biofil.csv`. Groups follow the ",
            "split an early draft describes: clones carrying a *sinR* mutation ",
-           "never carry one in *slrC* (*ywcC*) or upstream of *slrR*, so the ",
+           "never carry one in *ywcC* (BSU_38220) or upstream of *slrR*, so the ",
            "likely-vegetative clones divide in two. Holm-adjusted pairwise ",
            "t-tests on pooled SD: ",
            paste(sprintf("%s P = %s", contrasts$Comparison,

@@ -19,7 +19,7 @@ One row per mutation — 34 distinct sites in the endpoint total fraction, appea
 | Endpoint total fraction |   224,360 | ybdN | – | 3 | 3.6% | synonymous | LOW | Hypothetical |
 | Endpoint total fraction | 1,841,668 | pksN | – | 2 | 2.4% | missense | MODERATE | polyketide synthase PksN(pksN) |
 | Endpoint total fraction | 2,638,228 | comEC | – | 2 | 2.4% | frameshift | HIGH | ComE operon protein 3(comEC) |
-| Endpoint total fraction | 3,922,952 | slrC | ywcC | 2 | 2.4% | frameshift | HIGH | HTH-type transcriptional regulator YwcC(ywcC) |
+| Endpoint total fraction | 3,922,952 | ywcC | ywcC | 2 | 2.4% | frameshift | HIGH | HTH-type transcriptional regulator YwcC(ywcC) |
 | Endpoint total fraction |   367,283 | yciC-yckA | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
 | Endpoint total fraction |   551,424 | yddN-lrpA | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
 | Endpoint total fraction |   915,149 | yfiU | – | 1 | 1.2% | frameshift | HIGH | – |
@@ -43,5 +43,5 @@ One row per mutation — 34 distinct sites in the endpoint total fraction, appea
 | Endpoint total fraction | 3,488,662 | yvbU | – | 1 | 1.2% | missense | MODERATE | – |
 | Endpoint total fraction | 3,534,794 | pbpE | – | 1 | 1.2% | frameshift | HIGH | – |
 | Endpoint total fraction | 3,586,037 | hisB | – | 1 | 1.2% | missense | MODERATE | – |
-| Endpoint total fraction | 3,922,748 | slrC | ywcC | 1 | 1.2% | frameshift | HIGH | – |
+| Endpoint total fraction | 3,922,748 | ywcC | ywcC | 1 | 1.2% | frameshift | HIGH | – |
 

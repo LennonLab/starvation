@@ -37,5 +37,5 @@
 "S+NS1000",3488662,"yvbU",1,"missense_variant","MODERATE",NA,84,0.0119047619047619,"yvbU",NA,"BSU_33990",879,"yvbU"
 "S+NS1000",3534794,"pbpE",1,"frameshift_variant","HIGH",NA,84,0.0119047619047619,"pbpE",NA,"BSU_34440",1356,"pbpE"
 "S+NS1000",3586037,"hisB",1,"missense_variant","MODERATE",NA,84,0.0119047619047619,"hisB",NA,"BSU_34900",585,"hisB"
-"S+NS1000",3922748,"ywcC",1,"frameshift_variant","HIGH",NA,84,0.0119047619047619,"slrC","ywcC","BSU_38220",672,"slrC"
-"S+NS1000",3922952,"ywcC",2,"frameshift_variant","HIGH","HTH-type transcriptional regulator YwcC(ywcC)",84,0.0238095238095238,"slrC","ywcC","BSU_38220",672,"slrC"
+"S+NS1000",3922748,"ywcC",1,"frameshift_variant","HIGH",NA,84,0.0119047619047619,"ywcC","ywcC","BSU_38220",672,"ywcC"
+"S+NS1000",3922952,"ywcC",2,"frameshift_variant","HIGH","HTH-type transcriptional regulator YwcC(ywcC)",84,0.0238095238095238,"ywcC","ywcC","BSU_38220",672,"ywcC"

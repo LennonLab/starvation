@@ -33,7 +33,7 @@ suppressPackageStartupMessages({
 ## ---- clone metadata --------------------------------------------------------
 # The ancestor is the reference; the ten evolved clones are grouped by the
 # mutation they carry:
-#   slrC      : m4, m13, m79   (the data file calls this ywcC/slrR)
+#   ywcC      : m4, m13, m79   (the data file calls this ywcC/slrR)
 #   sinR      : m17, m19, m21, m41, m54
 #   spore     : m23, m26   (sporulation mutants, assayed as spores)
 #
@@ -53,10 +53,12 @@ N_REPS <- 8L   # replicate wells per strain (A-H on the single plate)
 # data/biofil.csv labels the m4/m13/m79 mutation "ywcC/slrR" and the assay file
 # is left exactly as it is; the mapping below is for display only.
 #
-# ywcC is the legacy synonym for BSU_38220, whose current symbol is slrC -- it
-# sits beside slrA and its product is the regulator of it. Cite as "slrC
-# (ywcC)" at first mention, since the lab's records and the 2016-era
-# literature use ywcC.
+# BSU_38220 is displayed as ywcC, not as the current RefSeq symbol slrC. The
+# rename is genuine -- it sits beside slrA and its product is the regulator of
+# it -- but the people who know this regulatory network know it as ywcC, and
+# slrC sits one letter from slrA and slrR, which appear in the same sentences.
+# The locus tag carries the identification. Cite as "ywcC (BSU_38220)" at
+# first mention.
 #
 # The "/slrR" half of that label is NOT the slrR gene. An early manuscript
 # draft names the group "ywcC/epsA-slrR mutants" and describes the split as
@@ -65,7 +67,7 @@ N_REPS <- 8L   # replicate wells per strain (A-H on the single plate)
 # 3,529,981, the marker that splits the sequenced clones into two clades.
 # R/06_lineage_groups.R runs that comparison.
 MUTATION_LABEL <- c(ancestor = "ancestor", sinR = "sinR",
-                    `ywcC/slrR` = "slrC", spore = "spore")
+                    `ywcC/slrR` = "ywcC", spore = "spore")
 
 #' Grouping variables for a set of strains, in the order given.
 #'
@@ -85,7 +87,7 @@ strain_meta <- function(clones) {
     label    = clones,
     origin   = ifelse(d$Treatment == "Ancestor", "Ancestor", "Evolved"),
     cell     = ifelse(d$Treatment == "Ancestor", NA, d$Treatment),
-    mutation = c(ancestor = NA, sinR = "sinR", `ywcC/slrR` = "slrC",
+    mutation = c(ancestor = NA, sinR = "sinR", `ywcC/slrR` = "ywcC",
                  spore = NA)[d$mutation],
     # full mutation factor, used by the models rather than the figures
     mutation_full = MUTATION_LABEL[d$mutation],

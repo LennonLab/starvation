@@ -128,7 +128,7 @@ t3 <- data.frame(
   Origin   = meta$origin,
   Cells    = ifelse(is.na(meta$cell), "–", meta$cell),
   # mutation_full already carries current names; see GENE_SYNONYMS in 00_setup
-  Mutation = c(nomut = "–", sinR = "sinR", slrC = "slrC",
+  Mutation = c(nomut = "–", sinR = "sinR", ywcC = "ywcC",
                spormut = "sporulation")[meta$mutation_full],
   check.names = FALSE
 )
@@ -214,7 +214,7 @@ methods <- c(
     "that σ²e stays interpretable; priors were β ~ Normal(0, 100)",
     "and inverse-Gamma(0.01, 0.01) on both variances. Candidate groupings were:",
     "a single global mean; ancestor vs. evolved; spore vs. total; and mutation",
-    "identity (*sinR*, *slrC* -- called *ywcC* in the lab's records --",
+    "identity (*sinR* and *ywcC*, BSU_38220 --",
     "and sporulation mutant). Mutation vs. no mutation is",
     "the same partition as ancestor vs. evolved on this strain set and was not",
     "fit separately. Groupings that apply to a subset of the strains were",
