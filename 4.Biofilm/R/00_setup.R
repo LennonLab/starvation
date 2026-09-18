@@ -86,7 +86,16 @@ strain_meta <- function(clones) {
     clone    = clones,
     label    = clones,
     origin   = ifelse(d$Treatment == "Ancestor", "Ancestor", "Evolved"),
-    cell     = ifelse(d$Treatment == "Ancestor", NA, d$Treatment),
+    # biofil.csv's Treatment column says "Vegetative", which describes how the
+    # strain was assayed. The growth-curve project labels the same ten clones
+    # "Total", which is the sequencing fraction they were isolated from. The
+    # partition is identical either way -- the two sporulation mutants against
+    # the other eight -- so the figures use one label, and the fraction is the
+    # one that is a property of the clone rather than of the assay. The assay
+    # condition belongs in the Methods, not on a bracket. The data file is
+    # left alone.
+    cell     = ifelse(d$Treatment == "Ancestor", NA,
+                      ifelse(d$Treatment == "Vegetative", "Total", d$Treatment)),
     mutation = c(ancestor = NA, sinR = "sinR", `ywcC/slrR` = "ywcC",
                  spore = NA)[d$mutation],
     # full mutation factor, used by the models rather than the figures

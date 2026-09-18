@@ -7,7 +7,7 @@
 #   fig_biofilm_mean_sd.pdf         per-strain geometric mean, wells behind
 #
 # All three carry nested group brackets: mutation (sinR, ywcC), cell type
-# (Spore, Vegetative), and origin (Ancestor, Evolved). Strain names are off the
+# (Spore, Total), and origin (Ancestor, Evolved). Strain names are off the
 # figures by default -- see show_clones.
 #
 # Everything is drawn on a log10 axis. Biofilm OD spans two orders of magnitude

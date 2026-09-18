@@ -69,7 +69,8 @@ v2_bio  <- b$mean_sd_plot(b$assay$OD550_Corrected, b$assay$clones,
 #' reduced to a median and an interval. Raw replicates go behind it in grey so
 #' the reader can still see the data the estimate came from.
 interval_plot <- function(env, quant, raw_value, raw_clone, ylab,
-                          log_y = FALSE, fig_height = 5.4) {
+                          log_y = FALSE, fig_height = 5.4,
+                          ancestor_line = TRUE) {
   ord <- env$STRIP_ORDER
 
   # Biofilm spans two orders of magnitude, so it is drawn on log10 values with
@@ -107,8 +108,9 @@ interval_plot <- function(env, quant, raw_value, raw_clone, ylab,
   ggplot() +
     geom_jitter(data = raw, aes(x, value), width = 0.13, height = 0,
                 colour = "grey78", size = 2.4, alpha = 0.75) +
-    geom_hline(yintercept = est$mid[match("ancestor", ord)],
-               linetype = "dashed", colour = "grey35") +
+    (if (ancestor_line)
+       geom_hline(yintercept = est$mid[match("ancestor", ord)],
+                  linetype = "dashed", colour = "grey35") else NULL) +
     geom_linerange(data = est, aes(x = x, ymin = lo, ymax = hi),
                    linewidth = 0.7, colour = "black") +
     geom_point(data = est, aes(x = x, y = mid), size = 3.6, shape = 21,
@@ -131,9 +133,14 @@ interval_plot <- function(env, quant, raw_value, raw_clone, ylab,
 
 v3_umax <- interval_plot(g, g$post$umax$quantiles$absolute,
                          g$fits$umax, g$fits$clones, g$PANELS$umax$strip_lab)
+# No ancestor line on the biofilm panel. The reference well is recorded as
+# B. subtilis 168 delta 6 and is probably not this experiment's ancestor, and
+# the claim this panel supports -- sinR against ywcC -- does not use it. The
+# growth panel keeps its line, where the ancestor is not in doubt.
 v3_bio  <- interval_plot(b, b$post$quantiles$absolute,
                          b$assay$OD550_Corrected, b$assay$clones,
-                         expression(Biofilm ~ (OD[550])), log_y = TRUE)
+                         expression(Biofilm ~ (OD[550])), log_y = TRUE,
+                         ancestor_line = FALSE)
 
 ## ---- write ------------------------------------------------------------------
 
