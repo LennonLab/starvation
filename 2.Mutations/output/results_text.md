@@ -30,13 +30,12 @@ The two clades are different kinds of object, and Fig. 2c draws them that way. *
 
 The strongest evidence of selection here comes from neither allele frequency nor the neutral simulation. Of the 34 mutations in the total fraction, 27 fall in a coding sequence; collapsing variants that share a gene and a carrier set leaves 26 independent events. Scattered at random across the 3,684,498 bp of coding sequence, a gene the size of *sinR* (336 bp) expects 0.0024 of them. It has five, in five alleles carried by non-overlapping sets of clones. A min-P permutation over all 4,171 coding sequences puts the family-wise probability below 5 x 10^-5^.
 
-*ywcC* -- *slrC* in the current annotation -- is hit twice, at 3,922,748 in one clone and 3,922,952 in two others, giving a family-wise P = 0.009. *recX* does **not** belong on this list, though the draft names it: both of its variants, a 49 bp deletion at 925,845 and a 1 bp insertion at 925,897, are carried by clone 4 and no other clone. Fifty-two bases apart in a single clone, they are one mutational event at best and an alignment artifact around the deletion breakpoint at worst. Two genes show parallelism, not three.
 
 This argument needs no coalescent, no assumption about population size and no assumption that the sample is well mixed. It is the line the manuscript should lead with; the frequency statement and the simulation comparison both rest on assumptions the data strain.
 
 ### 6. What were the mutations?
 
-Two genes took more than one independent mutation in the total fraction: *sinR* (5 independent events) and *slrC* (2 independent events). Beyond repeated hits in a single gene, 10 of the 34 mutations in the total fraction were present in more than one clone, and one mutation in *sinR* was found in 8 (9.5%) of the sequenced clones. The remaining 24 were singletons.
+Two genes took more than one independent mutation in the total fraction: *sinR* (5 independent events) and *ywcC* (2 independent events). Beyond repeated hits in a single gene, 10 of the 34 mutations in the total fraction were present in more than one clone, and one mutation in *sinR* was found in 8 (9.5%) of the sequenced clones. The remaining 24 were singletons.
 
 ---
 

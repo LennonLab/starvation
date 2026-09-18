@@ -49,7 +49,7 @@ SUPPLEMENTARY <- list(
        width   = 5.8, height = 5.2,
        title   = "Biofilm by lineage group",
        note    = paste(
-         "The three-group comparison: sinR against slrC/epsA-slrR against",
+         "The three-group comparison: sinR against ywcC/epsA-slrR against",
          "spore. This never uses the ancestor, so it is unaffected by the",
          "ancestor problem described for Figure 2.")),
 

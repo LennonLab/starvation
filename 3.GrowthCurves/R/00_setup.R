@@ -33,7 +33,7 @@ suppressPackageStartupMessages({
 ## ---- clone metadata --------------------------------------------------------
 # The ancestor is the reference; the ten evolved clones are grouped by the
 # mutation they carry:
-#   slrC    : M4, M13, M79   (the data files call this ywcC)
+#   ywcC    : M4, M13, M79   (BSU_38220; RefSeq now calls it slrC)
 #   sinR    : M17, M19, M21, M41, M54
 #   spormut : M23, M26   (sporulation mutants, scored as spores)
 #
@@ -48,12 +48,13 @@ PLOT_ORDER  <- c("M4", "M13", "M79", "M17", "M19",
 N_REPS <- 6L   # replicate growth curves retained per clone (the lowest-RMSE six)
 
 ## ---- gene naming -----------------------------------------------------------
-# The data files say ywcC, which is the legacy synonym, and they are left that
-# way. The current symbol for BSU_38220 is slrC -- it sits beside slrA and its
-# product is the regulator of it -- so ywcC is mapped to slrC for display only.
-# Cite as "slrC (ywcC)" at first mention: the lab's own records and the
-# 2016-era literature use ywcC.
-GENE_SYNONYMS <- c(ywcC = "slrC")
+# BSU_38220 is displayed as ywcC, not as the current RefSeq symbol slrC.
+# The rename is genuine, but the people who know this regulatory network know
+# the gene as ywcC, and slrC sits one letter from slrA and slrR, which appear
+# in the same sentences. The locus tag carries the identification; the symbol
+# only has to be recognisable. Cite as "ywcC (BSU_38220)" at first mention.
+# The data files already say ywcC, so nothing needs mapping.
+GENE_SYNONYMS <- character(0)
 
 gene_display <- function(x) {
   ifelse(is.na(x), x, ifelse(x %in% names(GENE_SYNONYMS), GENE_SYNONYMS[x], x))
@@ -69,7 +70,7 @@ STRIP_ORDER <- c("ancestor", "M23", "M26", "M17", "M19",
 #' `origin`, `cell`, and `mutation` are the three nested annotation rows of the
 #' manuscript figure. NA means no bracket is drawn for that strain in that row:
 #' the ancestor has no cell type or mutation to contrast, and the sporulation
-#' mutants are not part of the sinR/slrC comparison.
+#' mutants are not part of the sinR/ywcC comparison.
 strain_meta <- function(clones) {
   t <- read.csv(file.path(DATA_DIR, "treatments_original_corrected.csv"),
                 stringsAsFactors = FALSE)

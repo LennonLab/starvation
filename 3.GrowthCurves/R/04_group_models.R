@@ -28,7 +28,7 @@
 #   2  ancestor vs. evolved
 #   3  mutation vs. no mutation
 #   4  spore vs. total
-#   5  sinR vs. slrC (ywcC in the data files)
+#   5  sinR vs. ywcC (BSU_38220)
 #
 # On this strain set model 3 is model 2: every evolved isolate carries a
 # mutation and the ancestor carries none, so the two groupings are the same
@@ -171,16 +171,16 @@ SCOPES <- list(
     models = list(
       list(id = "1", label = "global mean",              grouping = NULL),
       list(id = "4", label = "spore vs total",           grouping = "cell"),
-      list(id = "5a", label = "sinR vs slrC vs spormut", grouping = "mutation_full")
+      list(id = "5a", label = "sinR vs ywcC vs spormut", grouping = "mutation_full")
     )
   ),
   list(
-    id = "sinR/slrC (8)",
-    strains = meta$clone[meta$mutation_full %in% c("sinR", "slrC")],
+    id = "sinR/ywcC (8)",
+    strains = meta$clone[meta$mutation_full %in% c("sinR", "ywcC")],
     note = "8 non-sporulation-mutant clones",
     models = list(
       list(id = "1", label = "global mean",   grouping = NULL),
-      list(id = "5", label = "sinR vs slrC",  grouping = "mutation_full")
+      list(id = "5", label = "sinR vs ywcC",  grouping = "mutation_full")
     )
   )
 )

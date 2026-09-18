@@ -14,7 +14,7 @@ more than one clone.
 
 Genes in **bold** carry more independent mutational events than the
 genome-wide rate allows, with the event count in parentheses:
-*sinR* took 5 independent events against 0.0024 expected for a gene of its length (2109-fold; P < 5e-05); *slrC* took 2 independent events against 0.0047 expected for a gene of its length (422-fold; P = 0.0086).
+*sinR* took 5 independent events against 0.0024 expected for a gene of its length (2109-fold; P < 5e-05); *ywcC* took 2 independent events against 0.0047 expected for a gene of its length (422-fold; P = 0.0086).
 
 P values are min-P permutation family-wise values over 20,000 scatterings of the events across all coding sequence, each gene judged against its own length - the appropriate correction when the gene was nominated by the data rather than chosen in advance. These are the two genes phenotyped in Figure 2.
 
