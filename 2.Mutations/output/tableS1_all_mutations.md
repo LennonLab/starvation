@@ -1,0 +1,47 @@
+## Table S1. Every mutation identified
+
+One row per mutation — 34 distinct sites in the endpoint total fraction, appearing 63 times across clones. Gene is the current symbol, resolved by position against the RefSeq annotation of NC_000964.3; Legacy is the name the source workbook used, where it differs. **The two *recX* rows are listed separately here but counted once in Table 2**: both are in clone 4 alone, 52 bp apart, so they cannot be shown to be independent events. Variant type and severity are the annotations carried in the source workbooks; the early-spore file records severity but not variant type, and no annotation survives for the endpoint spore fraction.
+
+| Fraction | Position | Gene | Legacy | Clones | Frequency | Variant | Severity | Product |
+| :--- | :--- | :--- | :--- | ---: | ---: | :--- | :--- | :--- |
+| Early spore fraction |   332,156 | lctP | – | 1 | 1.9% | – | LOW | L-lactate permease |
+| Early spore fraction |   682,755 | yeaA | – | 1 | 1.9% | – | MODERATE | hypothetical |
+| Endpoint spore fraction |   777,008 | yetA | – | 1 | 1.0% | A/T -> G/C | – | putative enzyme |
+| Endpoint spore fraction | 1,611,379 | ylmG | ymlG | 1 | 1.0% | C/G -> T/A | – | shape determination factor |
+| Endpoint spore fraction | 2,323,251 | kdgA | – | 1 | 1.0% | C/G -> T/A | – | 2-keto-3-deoxygluconate-6-phosphate aldolase |
+| Endpoint spore fraction | 3,539,121 | levB-aspP | levB-yveA | 1 | 1.0% | C/G -> T/A | – | endolevanase - L-aspartate/L-glutamate permeas |
+| Endpoint total fraction | 2,552,884 | sinR | – | 8 | 9.5% | missense | MODERATE | XRE family transcriptional regulator(sinR) |
+| Endpoint total fraction | 2,552,905 | sinR | – | 6 | 7.1% | missense | MODERATE | XRE family transcriptional regulator(sinR) |
+| Endpoint total fraction | 2,398,950 | ypeB | ypeB | 4 | 4.8% | missense | MODERATE | sporulation protein YpeB(ypeB) |
+| Endpoint total fraction | 2,552,873 | sinR | – | 4 | 4.8% | missense | MODERATE | XRE family transcriptional regulator(sinR) |
+| Endpoint total fraction | 2,982,523 | citZ-ytwI | – | 4 | 4.8% | intergenic_region | MODIFIER | citrate synthase 2(citZ) |
+| Endpoint total fraction | 3,307,629 | yutK | – | 4 | 4.8% | missense | MODERATE | transporter(yutK) |
+| Endpoint total fraction |   224,360 | ybdN | – | 3 | 3.6% | synonymous | LOW | Hypothetical |
+| Endpoint total fraction | 1,841,668 | pksN | – | 2 | 2.4% | missense | MODERATE | polyketide synthase PksN(pksN) |
+| Endpoint total fraction | 2,638,228 | comEC | – | 2 | 2.4% | frameshift | HIGH | ComE operon protein 3(comEC) |
+| Endpoint total fraction | 3,922,952 | slrC | ywcC | 2 | 2.4% | frameshift | HIGH | HTH-type transcriptional regulator YwcC(ywcC) |
+| Endpoint total fraction |   367,283 | yciC-yckA | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
+| Endpoint total fraction |   551,424 | yddN-lrpA | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
+| Endpoint total fraction |   915,149 | yfiU | – | 1 | 1.2% | frameshift | HIGH | – |
+| Endpoint total fraction |   925,845 | recX | – | 1 | 1.2% | frameshift | HIGH | – |
+| Endpoint total fraction |   925,897 | recX | – | 1 | 1.2% | frameshift | HIGH | – |
+| Endpoint total fraction | 1,071,743 | yhzE-yhaJ | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
+| Endpoint total fraction | 1,389,205 | thiW | – | 1 | 1.2% | synonymous | LOW | – |
+| Endpoint total fraction | 1,527,425 | ykyA | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 1,579,232 | bshC | yllA | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 1,685,519 | topA | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 2,175,478 | yorM | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 2,552,881 | sinR | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 2,552,985 | sinR | – | 1 | 1.2% | frameshift_variant&stop_lost&splice_region | HIGH | – |
+| Endpoint total fraction | 2,597,493 | ispH-yqfO | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
+| Endpoint total fraction | 2,778,674 | yrhH-yrzI | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
+| Endpoint total fraction | 2,814,640 | BSU_misc_RNA_41-aspS | – | 1 | 1.2% | intergenic_region | MODIFIER | – |
+| Endpoint total fraction | 2,912,024 | uvrC | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 2,917,349 | fadB | ysiB | 1 | 1.2% | synonymous | LOW | – |
+| Endpoint total fraction | 3,163,106 | cotI | – | 1 | 1.2% | synonymous | LOW | – |
+| Endpoint total fraction | 3,292,935 | besA | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 3,488,662 | yvbU | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 3,534,794 | pbpE | – | 1 | 1.2% | frameshift | HIGH | – |
+| Endpoint total fraction | 3,586,037 | hisB | – | 1 | 1.2% | missense | MODERATE | – |
+| Endpoint total fraction | 3,922,748 | slrC | ywcC | 1 | 1.2% | frameshift | HIGH | – |
+

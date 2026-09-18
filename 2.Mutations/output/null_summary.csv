@@ -1,0 +1,4 @@
+"fraction","n_clones","generations","mean_mutations","iterations_with_shared","max_carriers_seen"
+"S10",52,29,1.56,12,14
+"S1000",96,29,3.26,19,11
+"S+NS1000",84,1029,111.56,99,20

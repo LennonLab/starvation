@@ -1,0 +1,15 @@
+# Posterior quantiles of umax relative to the ancestor, produced by the original
+# rjags run. Recovered from arithmetic left in comments in the SporeMut repo at
+# code/4.GrowthCurves/test/GrowthCurve_CK.Rmd (chunk "Models with rjags - Don").
+# Used by R/03_validate.R to confirm this recreation matches the archived run.
+clone,q2.5,q50,q97.5
+M26,0.6417162,0.8615720,1.1520816
+M23,0.6015644,0.8223441,1.1154578
+M54,0.5159474,0.6771939,0.8857826
+M41,0.6714936,0.8612130,1.0959868
+M21,0.4180423,0.5471092,0.7142084
+M19,0.3519553,0.4615733,0.6022107
+M17,0.3694591,0.5109680,0.6993294
+M79,0.9319655,1.1811232,1.5009746
+M13,0.4950823,0.6485473,0.8493737
+M4,0.5628965,0.7213804,0.9197495

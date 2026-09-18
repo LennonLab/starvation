@@ -1,0 +1,27 @@
+# Endpoint spore fraction (S1000), the 96-clone GSF1925 run.
+#
+# The full 96-clone variant matrix was not retained. These four mutations are
+# the only surviving record of it, transcribed from the summary table in
+#   OneDrive_3_7-15-2026/SporeMut_Data_MB/Simulations/STHK/STHK_Bootstrap_29.xlsx
+#   -> sheet "Sheet3", the rows with Treatment == "LTS-S" (frequency 1/96 each).
+#
+# Provenance of the run itself: GSF1925-demultiplexing-summary.xlsx lists 96
+# libraries GSF1925-BS_Heatkilled_1..96. Heat-killed selects the spore
+# fraction, so this run is the endpoint spore sample. The endpoint spore data
+# arrived under the run identifier rather than a *Bacillus_filtered.xlsx name,
+# which is why it was previously mistaken for one of the three matrices.
+#
+# DO NOT take positions from S1000_endpoint_spore.circos.txt. That file is a
+# Circos highlight track: each row is a +/-10 kb window, so its start column is
+# the true position minus 10,000. Verified against the two files where true
+# positions survive -- all 34 LT_NoTreat rows and both ST_Heat rows match the
+# matrices exactly at +10,000 and not at all at +0.
+#
+# `gene_legacy` is the name in Sheet3. ylmG is spelled "ymlG" there (and in the
+# growth-curve treatments.csv); yveA is the old name for aspP (BSU_34470).
+# The displayed name is resolved from the annotation by position, as elsewhere.
+position	gene_legacy	variant	product
+777008	yetA	A/T -> G/C	putative enzyme
+1611379	ymlG	C/G -> T/A	shape determination factor
+2323251	kdgA	C/G -> T/A	2-keto-3-deoxygluconate-6-phosphate aldolase
+3539121	levB-yveA	C/G -> T/A	endolevanase - L-aspartate/L-glutamate permease

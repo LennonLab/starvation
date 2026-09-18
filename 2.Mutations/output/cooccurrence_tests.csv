@@ -1,0 +1,11 @@
+"gene","position","carriers","clones","background","nested_within"
+"sinR",2552884,8,"18,19,31,36,37,53,72,84","sinR 2,552,884",NA
+"sinR",2552905,6,"17,21,54,85,92,95","sinR 2,552,905",NA
+"ypeB",2398950,4,"21,54,85,88","mixed",NA
+"sinR",2552873,4,"16,28,41,93","sinR 2,552,873",NA
+"citZ-ytwI",2982523,4,"30,45,56,60","epsA-slrR clade","epsA-slrR@3,529,981"
+"yutK",3307629,4,"40,75,79,94","epsA-slrR clade","epsA-slrR@3,529,981"
+"ybdN",224360,3,"3,47,59","epsA-slrR clade","epsA-slrR@3,529,981"
+"pksN",1841668,2,"1,39","epsA-slrR clade","epsA-slrR@3,529,981"
+"comEC",2638228,2,"36,72","sinR 2,552,884","sinR@2,552,884"
+"ywcC",3922952,2,"38,4","no clade marker",NA

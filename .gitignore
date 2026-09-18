@@ -1,3 +1,33 @@
+# ---- this project -----------------------------------------------------------
+
+# Posterior draws. ~24 MB, and every one regenerates in seconds from run_all.R.
+# The summaries built from them (posterior_summary.csv, the tables) are tracked.
+*.rds
+
+# macOS
+.DS_Store
+
+# LaTeX build products
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+6.Manuscript/manuscript.pdf
+6.Manuscript/manuscript-overleaf.zip
+
+# ASM class files are distributed by the journal, not by us
+6.Manuscript/asmarticle.cls
+6.Manuscript/*.sty
+6.Manuscript/*.bst
+6.Manuscript/*.ldf
+
+# ---- GitHub's R template ----------------------------------------------------
+
 # History files
 .Rhistory
 .Rapp.history

@@ -1,0 +1,26 @@
+# Plate layouts for the 2020 biofilm reading, transcribed from the notes below
+# the grids in OneDrive_3_7-15-2026/Biofilm/Behringer_Plate1.xlsx and
+# Behringer_Plate2.xlsx. These are the only record of the layout anywhere in
+# the project folder.
+#
+# `note` is what the workbook says; `used` is the label biofil.csv carries.
+# Three disagree — see the README.
+plate,column,note,used
+plate1,1,M4,M4
+plate1,2,M13,M13
+plate1,3,M17,M17
+plate1,4,M19,M19
+plate1,5,m21,M21
+plate1,6,M23,M23
+plate1,7,M26,M26
+plate1,8,M41,M41
+plate1,9,M54,M54
+plate1,10,M66,M79
+plate1,11,B. subtilis 168 delta 6,Ancestor
+plate1,12,Media control,Blank1
+plate2,1,S1,S1
+plate2,3,S6,S6
+plate2,5,S11,S11
+plate2,7,S22,S22
+plate2,9,S52,S51
+plate2,11,S95,S95
