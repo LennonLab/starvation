@@ -1,6 +1,7 @@
-# Manuscript figures
+# Manuscript figures and tables
 
-Two figures, assembled from the four analysis projects.
+Two figures, the supplementary figures, and the manuscript's LaTeX tables, all
+assembled from the four analysis projects.
 
 ```bash
 Rscript run_all.R
@@ -17,6 +18,8 @@ recompute anything.
 | `output/figure1_caption_notes.md` | Figure 1's caption, including the parallelism numbers |
 | `output/figure2_caption_notes.md` | Figure 2's caption, including the ancestor caveat |
 | `output/supplementary_index.md` | what each supplementary figure is and where it comes from |
+| `output/tables/*.tex` | the manuscript's tables, converted from the projects' own |
+| `overleaf/` | figures and tables laid out for upload (not tracked) |
 
 ## Figure 1
 
@@ -98,6 +101,39 @@ To add one, append an entry to `SUPPLEMENTARY` in `R/03_supplementary.R` giving
 the project, the script, and the name that script gives its finished plot. A
 missing object is a warning and a skip, not a failure, so a half-run project
 does not stop the rest.
+
+## Tables, and the Overleaf upload
+
+The manuscript text is **not** in this repository. It is drafted in Overleaf,
+where it changes constantly and a git history of it would be noise. What lives
+here is everything generated from the analysis: the figures, and the tables.
+
+`R/04_tables.R` converts each project's own `table*.md` — caption and all — into
+`output/tables/*.tex`, so a number in the manuscript cannot differ from the
+number the analysis produced. It then stages `overleaf/` with `figures/` and
+`tables/` laid out the way `manuscript.tex` refers to them
+(`\input{tables/...}`, `\includegraphics{figures/...}`); drag both into the
+Overleaf project.
+
+| table | from |
+| --- | --- |
+| 1 population descriptors | `1.PopDynamics/output/table2_descriptors.md` |
+| 2 mutations by fraction | `2.Mutations/output/table1_mutations_by_fraction.md` |
+| 3 genes hit more than once | `2.Mutations/output/table2_repeated_genes.md` |
+| 4 growth group models | `3.GrowthCurves/output/table1_group_models.md` |
+| 5 biofilm group models | `4.Biofilm/output/table1_group_models.md` |
+| 6 biofilm by lineage group | `4.Biofilm/output/table4_lineage_groups.md` |
+
+To add one, append an entry to `TABLES` naming the project, the file and a
+label. A missing source file is a warning and a skip, not a failure.
+
+Every `.tex` file comes out plain ASCII — Greek letters, $\pm$, $\times$ and
+the rest are emitted as LaTeX commands — so the engine and the input encoding
+do not matter on Overleaf.
+
+Table S1, every mutation identified, is not converted: it is 40 rows and belongs
+in the supplementary PDF, which ASM wants uploaded separately. It is at
+`2.Mutations/output/tableS1_all_mutations.md`.
 
 ## How the panels get here
 

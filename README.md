@@ -19,7 +19,7 @@ cd 1.PopDynamics && Rscript run_all.R
 | [`2.Mutations`](2.Mutations) | variant matrices → mutation table, circos figure, neutral model, parallelism tests | `fig2a_circos.pdf`, `tableS1_all_mutations.md` |
 | [`3.GrowthCurves`](3.GrowthCurves) | Gompertz fits → Bayesian strain estimates for µmax, yield, lag | posterior summaries, group models |
 | [`4.Biofilm`](4.Biofilm) | crystal-violet assay → Bayesian strain estimates | posterior summaries, lineage-group comparison |
-| [`5.MsFigures`](5.MsFigures) | assembles Figures 1–2 and the supplementary figures | `figure1_*.pdf`, `figure2_*.pdf`, `figureS1`–`S4` |
+| [`5.MsFiguresTables`](5.MsFiguresTables) | assembles Figures 1–2, the supplementary figures and the manuscript's LaTeX tables | `figure1_*.pdf`, `figure2_*.pdf`, `figureS1`–`S4`, `tables/*.tex` |
 
 Every project has its own README with the detail: what the data are, what was
 decided and why, and what is still uncertain.
@@ -51,7 +51,7 @@ sample is well mixed.
 The four analysis projects share a structure: `data/` (inputs, unmodified),
 `R/` (numbered scripts), `output/` (everything generated), `run_all.R`.
 
-Nothing generated is edited by hand. `5.MsFigures` builds its panels by loading
+Nothing generated is edited by hand. `5.MsFiguresTables` builds its panels by loading
 the analysis projects' own figure code rather than reimplementing it, and the
 manuscript's tables are generated from these projects' own table files — so a
 number in the manuscript cannot differ from the number the analysis produced.

@@ -4,6 +4,9 @@
 # The summaries built from them (posterior_summary.csv, the tables) are tracked.
 *.rds
 
+# Staged Overleaf upload -- rebuilt by 5.MsFiguresTables/R/04_tables.R
+overleaf/
+
 # macOS
 .DS_Store
 

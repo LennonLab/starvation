@@ -5,7 +5,8 @@
 # from their saved posteriors and tables, not recomputed here.
 ################################################################################
 
-scripts <- c("R/01_figure1.R", "R/02_figure2.R", "R/03_supplementary.R")
+scripts <- c("R/01_figure1.R", "R/02_figure2.R", "R/03_supplementary.R",
+             "R/04_tables.R")
 
 for (s in scripts) {
   cat("\n=====", s, "=====\n")

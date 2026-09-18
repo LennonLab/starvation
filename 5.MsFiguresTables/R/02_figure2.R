@@ -21,7 +21,7 @@
 ################################################################################
 
 .setup <- Filter(file.exists, c("R/00_setup.R", "00_setup.R", "../R/00_setup.R"))
-if (!length(.setup)) stop("Run this from the 5.MsFigures project root (or R/).")
+if (!length(.setup)) stop("Run this from the manuscript-figures project root (or R/).")
 source(.setup[1])
 
 stopifnot(PHENOTYPE_SCALE %in% c("absolute", "relative"))
