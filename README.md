@@ -20,10 +20,13 @@ cd 1.PopDynamics && Rscript run_all.R
 | [`3.GrowthCurves`](3.GrowthCurves) | Gompertz fits → Bayesian strain estimates for µmax, yield, lag | posterior summaries, group models |
 | [`4.Biofilm`](4.Biofilm) | crystal-violet assay → Bayesian strain estimates | posterior summaries, lineage-group comparison |
 | [`5.MsFigures`](5.MsFigures) | assembles Figures 1–2 and the supplementary figures | `figure1_*.pdf`, `figure2_*.pdf`, `figureS1`–`S4` |
-| [`6.Manuscript`](6.Manuscript) | ASM-format manuscript; tables generated from the projects | `manuscript.tex` |
 
 Every project has its own README with the detail: what the data are, what was
 decided and why, and what is still uncertain.
+
+The manuscript itself is drafted in Overleaf and is not kept here. Its LaTeX
+tables are generated from these projects rather than transcribed, so they have
+to be rebuilt and re-uploaded whenever an analysis changes.
 
 ## What the analysis shows
 
@@ -49,8 +52,8 @@ The four analysis projects share a structure: `data/` (inputs, unmodified),
 `R/` (numbered scripts), `output/` (everything generated), `run_all.R`.
 
 Nothing generated is edited by hand. `5.MsFigures` builds its panels by loading
-the analysis projects' own figure code rather than reimplementing it, and
-`6.Manuscript` generates its LaTeX tables from those projects' table files — so a
+the analysis projects' own figure code rather than reimplementing it, and the
+manuscript's tables are generated from these projects' own table files — so a
 number in the manuscript cannot differ from the number the analysis produced.
 
 Re-running a project overwrites its `output/`. Large posterior draws
@@ -87,9 +90,6 @@ R (≥ 4.4) with `ggplot2`, `ggridges`, `patchwork`, `cowplot`, `gridGraphics`,
 `dplyr`, `tidyr`, `readxl`, `circlize`, `bbmle`, `lme4`, `loo`, `viridisLite`.
 The population-dynamics latent-state model uses JAGS via `rjags`; everything
 else is base R or the packages above.
-
-Building the manuscript additionally needs LaTeX and the ASM class files, which
-are not in this repository.
 
 ## Citation
 
