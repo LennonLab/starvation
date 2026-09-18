@@ -1,0 +1,44 @@
+# Which strain was fit from which plate-reader run, and the name of the
+# resulting fit file in data/gompertz_fits/. Read by R/90_gompertz_fits.R
+# (to refit) and R/91_build_comp_data.R (to label each curve with its run).
+#
+# `prefix` selects that strain's wells from the raw file. The "repeat" runs are
+# second (for M23, third) attempts at strains whose first run gave too few
+# usable curves.
+#
+# data/raw/20230802_GrowthCurve_SporeMut.csv is an earlier full-plate run that
+# this analysis does not use; its ancestor wells are named A_1..A_12 rather
+# than ancestor1..6, and its fits are the non-"_new" files in gompertz_fits/.
+run,raw_file,prefix,fit_name
+20230821,20230821_GrowthCurves_SporeMut.csv,ancestor,anc_new
+20230821,20230821_GrowthCurves_SporeMut.csv,M4_,M4_new
+20230821,20230821_GrowthCurves_SporeMut.csv,S1_,S1_new
+20230821,20230821_GrowthCurves_SporeMut.csv,M23_,M23_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M13_,M13_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M17_,M17_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M19_,M19_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M21_,M21_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M26_,M26_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M41_,M41_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M54_,M54_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,M79_,M79_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,S6_,S6_new
+20230822,20230822_SporeMut_GrowthCurves_R2B.csv,S11_,S11_new
+20230823,20230823_SporeMut_GrowthCurves_R2B.csv,S22_,S22_new
+20230823,20230823_SporeMut_GrowthCurves_R2B.csv,S51_,S51_new
+20230823,20230823_SporeMut_GrowthCurves_R2B.csv,S95_,S95_new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,M13_,M13_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,M17_,M17_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,M21_,M21_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,M23_,M23_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,M54_,M54_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,S1_,S1_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,S11_,S11_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,S22_,S22_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,S51_,S51_repeat.new
+20230824,20230824_SporeMut_GrowthCurves_R2B.csv,S95_,S95_repeat.new
+20230826,20230826_SporeMut_GrowthCurves_R2B.csv,M4_,M4_repeat.new
+20230826,20230826_SporeMut_GrowthCurves_R2B.csv,M19_,M19_repeat.new
+20230826,20230826_SporeMut_GrowthCurves_R2B.csv,M23_,M23_repeat2.new
+20230826,20230826_SporeMut_GrowthCurves_R2B.csv,M26_,M26_repeat.new
+20230826,20230826_SporeMut_GrowthCurves_R2B.csv,M41_,M41_repeat.new

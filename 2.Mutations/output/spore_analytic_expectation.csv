@@ -1,0 +1,3 @@
+"fraction","clones","expected","observed","lower95","upper95"
+"S10",52,2.085139902144,2,0,5
+"S1000",96,3.849489050112,4,1,8

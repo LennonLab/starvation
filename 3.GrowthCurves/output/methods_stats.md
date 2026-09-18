@@ -1,0 +1,20 @@
+## Methods: statistics
+
+### Growth curves
+
+Optical density at 600 nm was recorded for each well on a Synergy MX plate reader across 4 plate runs. Each trace was fit with a modified Gompertz model, yielding a lower asymptote, the maximum yield (A), the maximum specific growth rate (µmax) and the lag time (L), each with an asymptotic standard error. Curves that failed visual inspection of the fit diagnostics were discarded and the six lowest-RMSE curves per strain retained, giving 66 curves across 11 strains (the ancestor and ten evolved clones). The six curves of a strain are technical replicates, not independent isolates.
+
+### Strain-level estimates
+
+Because the fitted parameters differ in precision from curve to curve, replicates were combined by inverse-variance weighting in a Bayesian model rather than averaged. For strain *j*, the fitted value of curve *i* was modelled as x[i,j] ~ LogNormal(µ[j], τ[j] w[i,j]), where w[i,j] is the inverse of the squared standard error of that curve's fit, normalised to sum to one within a strain; the log-normal keeps estimates positive during sampling. Priors were µ[j] ~ Normal(0, precision 0.001) and τ[j] ~ Gamma(0.01, 0.01). Because every full conditional is conjugate, the posterior was sampled with a Gibbs sampler written in base R: four chains of 10,000 draws each after 2,000 burn-in iterations. Estimates are reported as posterior medians with 95% equal-tailed credible intervals. Relative fitness is exp(µ[j]) divided by the ancestor's exp(µ), computed draw by draw so that the interval carries the uncertainty in both terms.
+
+### Group comparisons
+
+To ask whether the strain groupings explain variation between strains, the log-transformed parameters were fit with a two-level model: y[i,j] ~ Normal(θ[j], σ²e / w[i,j]) at the curve level and θ[j] ~ Normal(x[j]'β, σ²s) at the strain level, where x[j] is a cell-means indicator for the grouping under test, so each element of β is one group's mean on the log scale. Weights were rescaled to mean one so that σ²e stays interpretable; priors were β ~ Normal(0, 100) and inverse-Gamma(0.01, 0.01) on both variances. Candidate groupings were: a single global mean; ancestor vs. evolved; spore vs. total; and mutation identity (*sinR*, *slrC* -- called *ywcC* in the lab's records -- and sporulation mutant). Mutation vs. no mutation is the same partition as ancestor vs. evolved on this strain set and was not fit separately. Groupings that apply to a subset of the strains were compared against a global-mean model fit to that same subset, and no comparison is made across subsets.
+
+Support for a grouping is reported as the reduction in the between-strain standard deviation σs relative to the global-mean model, together with a likelihood-ratio test against that model fit by maximum likelihood (lme4, with prior weights reproducing σ²e / w[i,j]), and the posterior ratio of group means with its credible interval. WAIC was also computed but is reported only in the supplementary output: with a strain-level effect in the model it scores prediction of a further curve from a strain already observed, which is not the question being asked, and the pointwise diagnostic flags it as unreliable at six curves per strain. In the ancestor vs. evolved comparison the ancestor group contains a single strain, so its group mean and that strain's own effect are the same quantity and σs is informed only by the ten evolved clones; that contrast should be read with the ancestor's lack of biological replication in mind.
+
+### Software
+
+Analyses were run in R version 4.6.0 (2026-04-24) with ggplot2 4.0.3, ggridges 0.5.7, lme4 2.0.1 and loo 2.9.0. The Gibbs samplers are conjugate implementations in base R; the strain-level sampler reproduces a reference JAGS fit of the same model to within 0.15% on posterior medians and 1.2% on the bounds of the 95% credible intervals, and the group-level sampler agrees with the corresponding lme4 fit to three decimal places. Code and data are in the growthCurves project.
+
