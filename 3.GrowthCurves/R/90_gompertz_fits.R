@@ -3,7 +3,9 @@
 #
 # Fit the modified Gompertz model to the raw plate-reader curves.
 #
-# Input : data/raw/*.csv        -- Synergy MX exports, one file per plate run
+# Input : data/raw/*.csv        -- plate-reader exports, one file per run
+#                                (the exports do not name the instrument; the
+#                                 group's methods document says Epoch2)
 #         data/plate_runs.csv   -- which strain came from which run
 # Output: output/gompertz_refit/<name>.fit.parms.txt  -- fitted b0, A, umax, L
 #         output/gompertz_refit/<name>.fit.parms.pdf  -- per-curve diagnostics
