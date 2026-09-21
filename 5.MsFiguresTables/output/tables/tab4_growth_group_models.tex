@@ -8,18 +8,19 @@
 \begin{adjustbox}{max width=\linewidth}
 \begin{tabular}{lllrrrrrrr}
 \toprule
-\textbf{Strains} & \textbf{Model} & \textbf{Grouping} & \textbf{Groups} & \textbf{$\mu$max $\sigma$} & \textbf{$\mu$max P} & \textbf{Yield (A) $\sigma$} & \textbf{Yield (A) P} & \textbf{Lag (L) $\sigma$} & \textbf{Lag (L) P} \\
+\textbf{Strains} & \textbf{Model} & \textbf{Grouping} & \textbf{Groups} & \textbf{$\mu$max w} & \textbf{$\mu$max P} & \textbf{Yield (A) w} & \textbf{Yield (A) P} & \textbf{Lag (L) w} & \textbf{Lag (L) P} \\
 \midrule
-all (11) & 1 & global mean & 1 & 0.269 & -- & 0.172 & -- & 0.123 & -- \\
-all (11) & 2 & ancestor vs evolved & 2 & 0.260 & 0.191 & 0.173 & 0.300 & 0.111 & 0.030 \\
-evolved (10) & 1 & global mean & 1 & 0.258 & -- & 0.173 & -- & 0.111 & -- \\
-evolved (10) & 4 & spore vs total & 2 & 0.233 & 0.118 & 0.120 & 0.004 & 0.113 & 0.253 \\
-evolved (10) & 5a & sinR vs ywcC vs spormut & 3 & 0.202 & 0.037 & 0.128 & 0.011 & 0.119 & 0.388 \\
-sinR/ywcC (8) & 1 & global mean & 1 & 0.257 & -- & 0.125 & -- & 0.121 & -- \\
-sinR/ywcC (8) & 5 & sinR vs ywcC & 2 & 0.228 & 0.075 & 0.136 & 0.495 & 0.127 & 0.416 \\
+all (11) & 1 & global mean & 1 & 0.25 & -- & 0.02 & -- & -- & -- \\
+all (11) & 2 & ancestor vs evolved & 2 & 0.19 & 0.224 & 0.01 & 0.355 & -- & -- \\
+all (11) & 3 & mutation vs none & 2 & 0.56 & 0.080 & 0.97 & 0.006 & -- & -- \\
+evolved (10) & 1 & global mean & 1 & 0.21 & -- & 0.03 & -- & -- & -- \\
+evolved (10) & 4 & spore vs total & 2 & 0.23 & 0.179 & 0.69 & 0.012 & -- & -- \\
+evolved (10) & 5a & sinR vs ywcC vs none & 3 & 0.56 & 0.110 & 0.28 & 0.047 & -- & -- \\
+sinR/ywcC (8) & 1 & global mean & 1 & 0.40 & -- & 0.72 & -- & -- & -- \\
+sinR/ywcC (8) & 5 & sinR vs ywcC & 2 & 0.60 & 0.143 & 0.28 & 0.530 & -- & -- \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 \par\smallskip
-{\footnotesize\raggedright For each grouping, $\sigma$ is the between-strain standard deviation remaining on the log scale after the grouping is fit; a grouping that explains something drives $\sigma$ below the global-mean row within the same set of strains. \textit{P} is a likelihood-ratio test against that global-mean model. Sets of strains are not comparable with one another. Model 3 (mutation vs. no mutation) is the same partition as model 2 on these strains and is not fit separately.\par}
+{\footnotesize\raggedright Linear mixed models of each log-transformed parameter, one per grouping, with strain as a random effect and curves weighted by the inverse variance of their fit. \textit{w} is the Akaike weight: the relative support for each grouping among those fit to the same strains, summing to one within each set. \textit{P} is a Kenward--Roger F-test against the global-mean model on the same strains, which corrects for the small number of strains. Sets of strains are not comparable with one another. Model 3 (mutation vs. no mutation) on all eleven strains compares the ancestor, M23 and M26 --- none of which carries a mutation --- with the eight \textit{sinR} and \textit{ywcC} clones. Among the ten evolved clones it is the same partition as model 4, because the two clones without a mutation are the two spore-fraction clones, so mutation and cell type cannot be separated on these strains. For lag time the between-strain variance is estimated at zero in every model: there is no strain-to-strain variation for a grouping to explain, so neither a weight nor a test is reported.\par}
 \end{sidewaystable}

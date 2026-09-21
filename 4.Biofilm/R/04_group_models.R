@@ -1,52 +1,55 @@
 ################################################################################
 # 04_group_models.R
 #
-# Do the strain groupings explain biofilm production? Fits a hierarchical model
-# per grouping and compares them.
+# Do the strain groupings explain biofilm production?
+#
+# One linear mixed model per candidate grouping, fit with lme4, compared within
+# each set of strains two ways:
+#
+#   * a Kenward-Roger F-test against the global-mean model -- the P value
+#     reported. KR rather than a chi-square likelihood-ratio test because there
+#     are only 8-11 strains, and the chi-square LRT is anticonservative with so
+#     few groups.
+#   * AICc and Akaike weights -- the multimodel comparison, summing to one
+#     within each set of strains.
+#
+# plus pairwise contrasts between groups, as ratios of group means with 95% CIs
+# and KR-adjusted P values (emmeans).
+#
+# The strain-level posteriors plotted in the figures come from brms
+# (R/01_bayes_biofilm.R). This script is the frequentist half.
 #
 # Input : data/biofil.csv
-# Output: output/model_comparison.csv   -- one row per grouping: how much
-#                                          between-strain variation it leaves,
-#                                          a likelihood-ratio test, and WAIC
-#         output/model_contrasts.csv    -- group means and pairwise ratios
+# Output: output/model_comparison.csv  one row per grouping
+#         output/model_contrasts.csv   pairwise group ratios
 #
 # Model, for well i of strain j:
 #
-#     y[i,j] = log(OD550 corrected)
-#     y[i,j]   ~ Normal( theta[j], sigma2_e )        well level
-#     theta[j] ~ Normal( x[j]'beta, sigma2_s )       strain level
-#     beta     ~ Normal(0, 100)
-#     sigma2_e, sigma2_s ~ InverseGamma(0.01, 0.01)
+#     log(OD550 corrected)[i,j] ~ 0 + group[j] + (1 | strain)
 #
-# x[j] is a cell-means indicator for the grouping under test, so each element
-# of beta is one group's mean on the log scale and exp(beta_a - beta_b) is a
-# ratio of group means. Wells enter unweighted -- unlike the growth-curve
-# assay there is no per-well standard error to weight by.
+# No weights: the wells of an assay plate are equally precise. Cell-means
+# coding, so each fixed effect is one group's mean on the log scale. AICc needs
+# maximum-likelihood fits and KR needs REML fits, so each model is fit both ways.
 #
-# Candidate groupings (the numbering follows the project notes):
-#   1  global mean -- all strains share one mean
-#   2  ancestor vs. evolved
-#   3  mutation vs. no mutation
-#   4  spore vs. vegetative
-#   5  sinR vs. ywcC (ywcC/slrR in the data file)
+# Candidate groupings (numbering follows the project notes):
+#   1   global mean
+#   2   ancestor vs evolved
+#   3   mutation vs no mutation
+#   4   spore vs total
+#   5   sinR vs ywcC (BSU_38220)
+#   5a  sinR vs ywcC vs no mutation
 #
-# On this strain set model 3 is model 2: every evolved isolate carries a
-# mutation and the ancestor carries none, so the two groupings are the same
-# partition.
+# Model 3 was previously skipped on the grounds that every evolved isolate
+# carries a mutation. It does not: m23 and m26 carry none. On all eleven
+# strains model 3 is {ancestor, m23, m26} against the eight sinR/ywcC clones.
+# Among the ten evolved clones it coincides with model 4, because the two
+# clones without a mutation are exactly the two spore-fraction clones.
 #
-# Models 4 and 5 apply to subsets of the strains, so they are compared against
-# their own null within that subset. Nothing is comparable across scopes.
-#
-# What to read. The question is whether a grouping explains variation *between
-# strains*, so the headline numbers are sigma_strain -- the between-strain SD
-# left after the grouping -- and the group ratios with their credible
-# intervals. A grouping that explains something shrinks sigma_strain relative
-# to the global-mean model.
-#
-# WAIC is reported too, but with a caveat: it scores prediction of one more
-# well from a strain already in the model, and the strain effect has already
-# absorbed the group difference by then, so it is close to blind to the
-# question being asked. Treat it as a footnote, not as the answer.
+# THE REFERENCE WELL. Models 2 and 3 on all eleven strains include the well
+# recorded as "Ancestor", which the plate record names B. subtilis 168 delta 6
+# -- probably not this experiment's ancestor (see warn_ancestor() in
+# 00_setup.R). Both models inherit that. Models 4, 5 and 5a use evolved clones
+# only and do not.
 ################################################################################
 
 ## Locate 00_setup.R whether you are in the project root or in R/.
@@ -54,134 +57,70 @@
 if (!length(.setup)) stop("Run this from the biofilm project root (or R/).")
 source(.setup[1])
 
-if (!requireNamespace("loo", quietly = TRUE)) {
-  stop("Package 'loo' is required for WAIC. install.packages(\"loo\")")
+for (p in c("lme4", "pbkrtest", "MuMIn", "emmeans")) {
+  if (!requireNamespace(p, quietly = TRUE)) {
+    stop(sprintf("Package '%s' is required. install.packages(\"%s\")", p, p))
+  }
 }
-
-set.seed(20230826)
-
-N_CHAINS <- 4L
-N_BURN   <- 2000L
-N_ITER   <- 5000L    # draws kept per chain
 
 ## ---- data ------------------------------------------------------------------
 
 assay <- read.csv(file.path(DATA_DIR, "biofil.csv"), stringsAsFactors = FALSE)
+assay <- assay[assay$clones %in% MODEL_ORDER, ]
 meta  <- strain_meta(MODEL_ORDER)
+meta$has_mutation <- ifelse(meta$mutated, "mutation", "none")
 
-## ---- sampler ---------------------------------------------------------------
+PARAMS <- list(biofilm = "OD550_Corrected")
 
-#' Gibbs sampler for the hierarchical model above.
-#'
-#' Every full conditional is conjugate, so this needs no external sampler.
-#'
-#' @param y      log parameter, one value per curve
-#' @param w      curve weight (inverse variance, scaled to mean 1)
-#' @param strain factor identifying the strain of each curve
-#' @param X      strain-level design matrix, one row per level of `strain`
-fit_hier <- function(y, w, strain, X,
-                     n_chains = N_CHAINS, n_iter = N_ITER, n_burn = N_BURN,
-                     beta_prior_var = 100, a0 = 0.01, b0 = 0.01) {
-  strain <- droplevels(as.factor(strain))
-  J <- nlevels(strain)
-  N <- length(y)
-  p <- ncol(X)
-  stopifnot(nrow(X) == J)
+## ---- which groupings, on which strains -------------------------------------
 
-  # Per-strain sufficient statistics, recomputed only where they depend on
-  # theta inside the loop.
-  Sw <- tapply(w, strain, sum)
-  Tw <- tapply(w * y, strain, sum)
-  idx <- as.integer(strain)
-
-  XtX_prior <- diag(1 / beta_prior_var, p)
-
-  one_chain <- function() {
-    theta    <- tapply(y, strain, mean)
-    sigma2_e <- var(y)
-    sigma2_s <- var(theta)
-    if (!is.finite(sigma2_s) || sigma2_s <= 0) sigma2_s <- 0.01
-
-    beta_out  <- matrix(NA_real_, n_iter, p, dimnames = list(NULL, colnames(X)))
-    sig_out   <- matrix(NA_real_, n_iter, 2,
-                        dimnames = list(NULL, c("sigma2_e", "sigma2_s")))
-    ll_out    <- matrix(NA_real_, n_iter, N)
-    beta      <- rep(0, p)
-
-    for (it in seq_len(n_iter + n_burn)) {
-      # theta | beta, variances
-      mu_s  <- as.vector(X %*% beta)
-      prec  <- Sw / sigma2_e + 1 / sigma2_s
-      theta <- rnorm(J, (Tw / sigma2_e + mu_s / sigma2_s) / prec, 1 / sqrt(prec))
-
-      # beta | theta, sigma2_s
-      V    <- chol2inv(chol(crossprod(X) / sigma2_s + XtX_prior))
-      m    <- V %*% (crossprod(X, theta) / sigma2_s)
-      beta <- as.vector(m + t(chol(V)) %*% rnorm(p))
-
-      # variances
-      resid_e  <- y - theta[idx]
-      sigma2_e <- 1 / rgamma(1, a0 + N / 2, b0 + sum(w * resid_e^2) / 2)
-      resid_s  <- theta - as.vector(X %*% beta)
-      sigma2_s <- 1 / rgamma(1, a0 + J / 2, b0 + sum(resid_s^2) / 2)
-
-      if (it > n_burn) {
-        k <- it - n_burn
-        beta_out[k, ] <- beta
-        sig_out[k, ]  <- c(sigma2_e, sigma2_s)
-        ll_out[k, ]   <- dnorm(y, theta[idx], sqrt(sigma2_e / w), log = TRUE)
-      }
-    }
-    list(beta = beta_out, sigma = sig_out, loglik = ll_out)
-  }
-
-  chains <- lapply(seq_len(n_chains), function(i) one_chain())
-  list(
-    beta   = do.call(rbind, lapply(chains, `[[`, "beta")),
-    sigma  = do.call(rbind, lapply(chains, `[[`, "sigma")),
-    loglik = do.call(rbind, lapply(chains, `[[`, "loglik")),
-    strain_levels = levels(strain)
-  )
-}
-
-## ---- what to compare -------------------------------------------------------
-
-# Each scope is a set of strains; within it, each candidate grouping is fit and
-# compared by WAIC. `grouping = NULL` means the global-mean model.
 SCOPES <- list(
   list(
     id = "all (11)",
     strains = MODEL_ORDER,
-    note = "ancestor + 10 evolved clones",
     models = list(
-      list(id = "1", label = "global mean",         grouping = NULL),
-      list(id = "2", label = "ancestor vs evolved", grouping = "origin")
+      list(id = "1", label = "global mean",           grouping = NULL),
+      list(id = "2", label = "ancestor vs evolved",   grouping = "origin"),
+      list(id = "3", label = "mutation vs none",      grouping = "has_mutation")
     )
   ),
   list(
     id = "evolved (10)",
     strains = setdiff(MODEL_ORDER, "ancestor"),
-    note = "10 evolved clones",
+    # model 3 is the same partition as model 4 here and is not repeated
     models = list(
-      list(id = "1", label = "global mean",                grouping = NULL),
-      list(id = "4", label = "spore vs vegetative",        grouping = "cell"),
-      list(id = "5a", label = "sinR vs ywcC vs spore", grouping = "mutation_full")
+      list(id = "1",  label = "global mean",          grouping = NULL),
+      list(id = "4",  label = "spore vs total",       grouping = "cell"),
+      list(id = "5a", label = "sinR vs ywcC vs none", grouping = "mutation_full")
     )
   ),
   list(
     id = "sinR/ywcC (8)",
     strains = meta$clone[meta$mutation_full %in% c("sinR", "ywcC")],
-    note = "8 non-sporulation-mutant clones",
     models = list(
-      list(id = "1", label = "global mean",         grouping = NULL),
-      list(id = "5", label = "sinR vs ywcC",   grouping = "mutation_full")
+      list(id = "1", label = "global mean",           grouping = NULL),
+      list(id = "5", label = "sinR vs ywcC",          grouping = "mutation_full")
     )
   )
 )
 
-PARAMS <- list(biofilm = "OD550_Corrected")
+## ---- fitting ---------------------------------------------------------------
 
-## ---- run -------------------------------------------------------------------
+fit_both <- function(dd, grouping) {
+  form <- if (is.null(grouping)) y ~ 1 + (1 | strain) else y ~ 0 + grp + (1 | strain)
+  fit <- function(reml) suppressMessages(suppressWarnings(
+    lme4::lmer(form, data = dd, REML = reml)))
+  list(reml = fit(TRUE), ml = fit(FALSE))
+}
+
+sigma_strain <- function(m) sqrt(as.numeric(lme4::VarCorr(m)$strain))
+
+kr_test <- function(big, small) {
+  out <- tryCatch(pbkrtest::KRmodcomp(big, small)$test["Ftest", ],
+                  error = function(e) NULL)
+  if (is.null(out)) return(c(F = NA, ndf = NA, ddf = NA, p = NA))
+  c(F = out$stat, ndf = out$ndf, ddf = out$ddf, p = out$p.value)
+}
 
 comparison <- list()
 contrasts  <- list()
@@ -191,168 +130,99 @@ for (pname in names(PARAMS)) {
 
   for (scope in SCOPES) {
     d <- assay[assay$clones %in% scope$strains, ]
-    d$strain <- factor(d$clones, levels = scope$strains)
+    base <- data.frame(y = log(d[[column]]),
+                       strain = factor(d$clones, levels = scope$strains))
 
-    y <- log(d[[column]])
-    w <- rep(1, length(y))                # every well counts the same here
-
-    m <- meta[match(scope$strains, meta$clone), ]
-
-    waics <- list()
-    mls   <- list()
+    fitted <- list()
     for (mod in scope$models) {
-      # Cell-means coding: one column per group, so each element of beta is
-      # that group's mean on the log scale.
-      X <- if (is.null(mod$grouping)) {
-        matrix(1, nrow(m), 1, dimnames = list(NULL, "(all)"))
-      } else {
-        g <- factor(m[[mod$grouping]])
-        matrix(as.integer(outer(g, levels(g), "==")), nrow(m),
-               dimnames = list(NULL, levels(g)))
+      dd <- base
+      if (!is.null(mod$grouping)) {
+        dd$grp <- factor(meta[[mod$grouping]][match(d$clones, meta$clone)])
       }
-
-      f  <- fit_hier(y, w, d$strain, X)
-      # loo warns that p_waic > 0.4 for some curves; that is the unreliability
-      # noted in the header, not a failure. Report it once at the end.
-      ww <- withCallingHandlers(loo::waic(f$loglik),
-                                warning = function(cnd) invokeRestart("muffleWarning"))
-      waics[[mod$id]] <- ww
-
-      # Maximum-likelihood fit of the same model, for a likelihood-ratio test.
-      # lme4's prior `weights` scale the residual variance exactly as
-      # sigma2_e / w does in the Gibbs sampler.
-      ml <- NULL
-      if (requireNamespace("lme4", quietly = TRUE)) {
-        dd <- data.frame(y = y, w = w, strain = d$strain,
-                         grp = if (is.null(mod$grouping)) factor("all")
-                               else factor(m[[mod$grouping]][match(d$clones, m$clone)]))
-        form <- if (is.null(mod$grouping)) y ~ 1 + (1 | strain)
-                else y ~ 0 + grp + (1 | strain)
-        ml <- suppressMessages(suppressWarnings(
-          lme4::lmer(form, data = dd, weights = w, REML = FALSE)))
-      }
-      mls[[mod$id]] <- ml
-
-      comparison[[length(comparison) + 1]] <- data.frame(
-        parameter = pname, scope = scope$id, model = mod$id,
-        grouping = mod$label, n_groups = ncol(X),
-        # between-strain SD remaining after the grouping (log scale)
-        sigma_strain = median(sqrt(f$sigma[, "sigma2_s"])),
-        sigma_curve  = median(sqrt(f$sigma[, "sigma2_e"])),
-        aic = if (is.null(ml)) NA_real_ else AIC(ml),
-        lrt_p = NA_real_,
-        waic = ww$estimates["waic", "Estimate"],
-        waic_se = ww$estimates["waic", "SE"],
-        p_waic = ww$estimates["p_waic", "Estimate"]
-      )
-
-      # Group means and pairwise ratios, on the measured scale.
-      if (ncol(X) > 1) {
-        gm <- exp(f$beta)
-        pairs <- utils::combn(colnames(X), 2, simplify = FALSE)
-        for (pr in pairs) {
-          ratio <- gm[, pr[1]] / gm[, pr[2]]
-          q <- quantile(ratio, c(.025, .5, .975))
-          contrasts[[length(contrasts) + 1]] <- data.frame(
-            parameter = pname, scope = scope$id, model = mod$id,
-            contrast = paste(pr[1], "/", pr[2]),
-            ratio_2.5 = q[[1]], ratio_50 = q[[2]], ratio_97.5 = q[[3]],
-            prob_lt_1 = mean(ratio < 1)
-          )
-        }
-      }
+      fitted[[mod$id]] <- c(fit_both(dd, mod$grouping), list(dd = dd, mod = mod))
     }
 
-    # Expected log predictive density of each grouping relative to the
-    # global-mean model. loo_compare() would report this against whichever
-    # model is best rather than against the global one, so take the paired
-    # pointwise difference directly -- the same quantity, fixed reference.
-    base <- waics[["1"]]$pointwise[, "elpd_waic"]
-    for (id in setdiff(names(waics), "1")) {
-      dpt <- waics[[id]]$pointwise[, "elpd_waic"] - base
-      i <- which(sapply(comparison, function(x)
-        x$parameter == pname && x$scope == scope$id && x$model == id))
-      comparison[[i]]$elpd_diff_vs_global <- sum(dpt)
-      comparison[[i]]$se_diff             <- sqrt(length(dpt)) * sd(dpt)
+    null_fit <- fitted[["1"]]
+    aicc   <- vapply(fitted, function(f) MuMIn::AICc(f$ml), numeric(1))
+    weight <- exp(-0.5 * (aicc - min(aicc)))
+    weight <- weight / sum(weight)
 
-      if (!is.null(mls[[id]]) && !is.null(mls[["1"]])) {
-        a <- suppressMessages(anova(mls[["1"]], mls[[id]]))
-        comparison[[i]]$lrt_p <- a$`Pr(>Chisq)`[2]
+    for (id in names(fitted)) {
+      f   <- fitted[[id]]
+      mod <- f$mod
+      kr  <- if (is.null(mod$grouping)) c(F = NA, ndf = NA, ddf = NA, p = NA)
+             else kr_test(f$reml, null_fit$reml)
+      lrt <- if (is.null(mod$grouping)) NA
+             else anova(null_fit$ml, f$ml)$`Pr(>Chisq)`[2]
+
+      comparison[[length(comparison) + 1]] <- data.frame(
+        parameter     = pname,
+        scope         = scope$id,
+        model         = mod$id,
+        grouping      = mod$label,
+        n_groups      = if (is.null(mod$grouping)) 1L else nlevels(f$dd$grp),
+        sigma_strain  = sigma_strain(f$reml),
+        singular      = lme4::isSingular(f$reml),
+        AICc          = aicc[[id]],
+        delta_AICc    = aicc[[id]] - min(aicc),
+        akaike_weight = weight[[id]],
+        F             = kr[["F"]],
+        ndf           = kr[["ndf"]],
+        ddf           = kr[["ddf"]],
+        p_kr          = kr[["p"]],
+        p_lrt_chisq   = lrt,
+        uses_reference_well = scope$id == "all (11)" && !is.null(mod$grouping),
+        stringsAsFactors = FALSE)
+
+      if (!is.null(mod$grouping)) {
+        em <- suppressMessages(emmeans::emmeans(f$reml, ~ grp,
+                                                lmer.df = "kenward-roger"))
+        pw <- as.data.frame(summary(emmeans::contrast(em, "pairwise"),
+                                    infer = c(TRUE, TRUE)))
+        contrasts[[length(contrasts) + 1]] <- data.frame(
+          parameter = pname,
+          scope     = scope$id,
+          model     = mod$id,
+          contrast  = gsub(" - ", " / ", pw$contrast),
+          ratio     = exp(pw$estimate),
+          lower     = exp(pw$lower.CL),
+          upper     = exp(pw$upper.CL),
+          df        = pw$df,
+          p         = pw$p.value,
+          adjust    = if (nlevels(f$dd$grp) > 2) "tukey" else "none",
+          stringsAsFactors = FALSE)
       }
     }
   }
 }
 
-comparison <- bind_rows(comparison)
-contrasts  <- bind_rows(contrasts)
-rownames(contrasts) <- NULL
-
-comparison$elpd_diff_vs_global[comparison$model == "1"] <- 0
-comparison$se_diff[comparison$model == "1"] <- 0
+comparison <- do.call(rbind, comparison)
+contrasts  <- do.call(rbind, contrasts)
 
 write.csv(comparison, file.path(OUT_DIR, "model_comparison.csv"), row.names = FALSE)
 write.csv(contrasts,  file.path(OUT_DIR, "model_contrasts.csv"),  row.names = FALSE)
 
-## ---- report ----------------------------------------------------------------
+## ---- print -----------------------------------------------------------------
 
-fmt_p <- function(x) ifelse(is.na(x), "-",
-                            ifelse(x < 0.001, "<0.001", sprintf("%.3f", x)))
-
-cat("\n=========== Does the grouping explain variation between strains? ==========\n")
-cat("sigma_strain: between-strain SD (log scale) left after the grouping.\n")
-cat("A grouping that explains something drives it below the global-mean row.\n")
-cat("WAIC differences and their standard errors are in model_comparison.csv.\n")
-for (pname in names(PARAMS)) {
-  cat("\n--", pname, "--\n")
-  x <- comparison[comparison$parameter == pname, ]
-  print(data.frame(
-    scope = x$scope, model = x$model, grouping = x$grouping,
-    groups = x$n_groups,
-    sigma_strain = round(x$sigma_strain, 3),
-    LRT_p = fmt_p(x$lrt_p),
-    WAIC = round(x$waic, 1)), row.names = FALSE)
-}
-
-cat("\n================ Group ratios (95% credible interval) ==================\n")
-cat("Ratio of group means on the measured scale; prob_lt_1 is the posterior\n")
-cat("probability that the first group is the smaller of the two.\n")
-for (pname in names(PARAMS)) {
-  cat("\n--", pname, "--\n")
-  x <- contrasts[contrasts$parameter == pname, ]
-  print(data.frame(
-    scope = x$scope, contrast = x$contrast,
-    ratio = sprintf("%.2f [%.2f, %.2f]", x$ratio_50, x$ratio_2.5, x$ratio_97.5),
-    prob_lt_1 = round(x$prob_lt_1, 3)), row.names = FALSE)
-}
+show <- comparison
+show$sigma_strain  <- round(show$sigma_strain, 3)
+show$akaike_weight <- round(show$akaike_weight, 2)
+show$p_kr          <- signif(show$p_kr, 2)
+show$ddf           <- round(show$ddf, 1)
+print(show[, c("scope", "model", "grouping", "n_groups", "sigma_strain",
+               "akaike_weight", "ddf", "p_kr", "singular")], row.names = FALSE)
 
 cat("\nNotes\n")
-cat("  * Model 3 (mutation vs. no mutation) is the same partition as model 2 on\n",
-    "   these strains, so it is not fit separately: every evolved isolate\n",
-    "   carries a mutation and the ancestor carries none.\n", sep = "")
-cat("  * In model 2 the ancestor group holds one strain, so its group mean and\n",
-    "   that strain's own effect are the same quantity, and the between-strain\n",
-    "   SD is informed only by the ten evolved clones. The ancestor's eight\n",
-    "   wells are technical replicates, not independent strains -- read that\n",
-    "   contrast accordingly.\n", sep = "")
-cat("  * WAIC scores prediction of one more well from a strain already in the\n",
-    "   model, by which point the strain effect has absorbed the group\n",
-    "   difference, so it barely responds to the grouping. It is in the table\n",
-    "   for completeness; sigma_strain, the LRT and the ratios are what answer\n",
-    "   the question.\n", sep = "")
-
-## ---- sampler cross-check ---------------------------------------------------
-# The Gibbs sampler and lme4 fit the same model by different routes, so the
-# group means should agree closely.
-if (requireNamespace("lme4", quietly = TRUE)) {
-  dd <- data.frame(y = log(assay[[PARAMS$biofilm]]),
-                   strain = factor(assay$clones),
-                   grp = meta$origin[match(assay$clones, meta$clone)])
-  ml <- suppressMessages(suppressWarnings(
-    lme4::lmer(y ~ 0 + grp + (1 | strain), data = dd, REML = FALSE)))
-  b   <- lme4::fixef(ml)
-  bay <- contrasts$ratio_50[contrasts$scope == "all (11)"][1]
-  cat(sprintf("\nCross-check (ancestor/evolved ratio): Gibbs %.3f, lme4 %.3f\n",
-              bay, exp(b[["grpAncestor"]] - b[["grpEvolved"]])))
+cat("  * P is a Kenward-Roger F-test against the global mean within the same\n",
+    "   strains. The chi-square LRT is kept in model_comparison.csv.\n", sep = "")
+cat("  * Models 2 and 3 on all eleven strains include the reference well, which\n",
+    "   is provisional (168 delta 6). Models 4, 5 and 5a do not use it.\n", sep = "")
+cat("  * Among the ten evolved clones model 3 is identical to model 4.\n", sep = "")
+if (any(comparison$singular)) {
+  cat("  * Singular fits: ",
+      paste(unique(with(comparison[comparison$singular, ],
+                        paste(scope, "model", model))), collapse = "; "), "\n", sep = "")
 }
 
-message("\nWrote output/model_comparison.csv and output/model_contrasts.csv")
+warn_ancestor()
+message("\nWrote output/model_comparison.csv and model_contrasts.csv")
