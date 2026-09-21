@@ -157,6 +157,11 @@ save_figure(pair(v2_umax, v2_bio), "figure2_v2_mean_sd", width = 13, height = 5.
 save_figure(pair(v3_umax, v3_bio), "figure2_v3_posterior_interval",
             width = 13, height = 5.4)
 
+# v3 was chosen. It is also written under the name the manuscript includes, so
+# main.tex's \includegraphics{figures/figure2_phenotypes.pdf} gets this figure
+# and not the superseded four-panel version from R/02_figure2.R.
+save_figure(pair(v3_umax, v3_bio), "figure2_phenotypes", width = 13, height = 5.4)
+
 ## ---- yield and lag, for the supplement --------------------------------------
 
 supp <- (g$ridge_plot(g$post$A$absolute[, g$ABS_ORDER], g$ABS_ORDER,

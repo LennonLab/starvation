@@ -142,11 +142,13 @@ p <- ggplot(plot_rows, aes(value, row, colour = era, shape = era)) +
            hjust = -0.05, size = 3.1, colour = "grey30") +
   labs(x = "Blank-corrected optical density", y = NULL,
        title = "Diagnostic: where the 2023 wild-type re-read lands",
+       # Broken by hand into short lines: the PDF device's font metrics are
+       # wider than the PNG's, and a line that fits one is clipped in the other.
        subtitle = paste(
-         "Not a calibration. 2020 read OD550 against a 0.065 blank; 2023 read",
-         "OD540 against a 0.175 blank.\nNo strain was measured on both plates,",
-         "so the offset between them is unknown and is inside every",
-         "comparison\nbelow. Large points are means."),
+         "Not a calibration. 2020 read OD550 against a 0.065 blank;",
+         "2023 read OD540 against a 0.175 blank.\nNo strain was measured",
+         "on both plates, so the offset between them is unknown\nand sits",
+         "inside every comparison below. Large points are means."),
        caption = if (n_nonpos) sprintf(
          "%d of 48 wells in 2023 correct to <= 0 and cannot be shown on a log axis.",
          n_nonpos) else NULL) +

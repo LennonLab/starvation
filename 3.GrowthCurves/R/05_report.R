@@ -174,8 +174,8 @@ methods <- c(
   "### Growth curves",
   "",
   sprintf(paste(
-    "Optical density at 600 nm was recorded for each well on a Synergy MX",
-    "plate reader across %d plate runs. Each trace was fit with a modified",
+    "Optical density at 600 nm was recorded every 15 min for each well on a",
+    "microplate reader across %d plate runs. Each trace was fit with a modified",
     "Gompertz model, yielding a lower asymptote, the maximum yield (A), the",
     "maximum specific growth rate (µmax) and the lag time (L), each with",
     "an asymptotic standard error. Curves that failed visual inspection of the",

@@ -2,7 +2,7 @@
 
 ### Growth curves
 
-Optical density at 600 nm was recorded for each well on a Synergy MX plate reader across 4 plate runs. Each trace was fit with a modified Gompertz model, yielding a lower asymptote, the maximum yield (A), the maximum specific growth rate (µmax) and the lag time (L), each with an asymptotic standard error. Curves that failed visual inspection of the fit diagnostics were discarded and the six lowest-RMSE curves per strain retained, giving 66 curves across 11 strains (the ancestor and ten evolved clones). The six curves of a strain are technical replicates, not independent isolates.
+Optical density at 600 nm was recorded every 15 min for each well on a microplate reader across 4 plate runs. Each trace was fit with a modified Gompertz model, yielding a lower asymptote, the maximum yield (A), the maximum specific growth rate (µmax) and the lag time (L), each with an asymptotic standard error. Curves that failed visual inspection of the fit diagnostics were discarded and the six lowest-RMSE curves per strain retained, giving 66 curves across 11 strains (the ancestor and ten evolved clones). The six curves of a strain are technical replicates, not independent isolates.
 
 ### Strain-level estimates
 

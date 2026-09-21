@@ -9,7 +9,11 @@
 #   C  lag time              3.GrowthCurves/R/02_figures.R
 #   D  biofilm               4.Biofilm/R/02_figures.R
 #
-# Output: output/figure2_phenotypes.pdf / .png
+# Output: output/figure2_ridges_4panel.pdf / .png
+#
+# SUPERSEDED as the manuscript figure by v3 in R/05_figure2_variants.R, which
+# now writes figure2_phenotypes. Kept for reference; renamed so it cannot be
+# mistaken for the figure the manuscript includes.
 #         output/figure2_caption_notes.md
 #
 # The panels are the projects' own ridge_plot() output, built from the same
@@ -149,7 +153,7 @@ figure2 <- ((for_grid(panel_a) | for_grid(panel_b, PAD_LEFT)) /
   theme(legend.position = "bottom") &
   TAG_THEME
 
-save_figure(figure2, "figure2_phenotypes", width = 13, height = 8.8)
+save_figure(figure2, "figure2_ridges_4panel", width = 13, height = 8.8)
 
 ## ---- caption notes ----------------------------------------------------------
 
@@ -187,4 +191,4 @@ if (isTRUE(b$ANCESTOR_IS_PROVISIONAL)) {
 
 writeLines(notes, file.path(OUT_DIR, "figure2_caption_notes.md"))
 
-cat("Wrote output/figure2_phenotypes.pdf / .png and figure2_caption_notes.md\n")
+cat("Wrote output/figure2_ridges_4panel.pdf / .png (superseded) and caption notes\n")
