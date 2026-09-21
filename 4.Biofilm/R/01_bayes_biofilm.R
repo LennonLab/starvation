@@ -23,6 +23,13 @@
 # exp(mu[j]) / exp(mu[ancestor]) is its level relative to the ancestor.
 #
 # Two samplers give the same posterior:
+#   engine = "brms"  -- Stan via brms (default). Each strain has its own mean
+#                       and its own SD on the log scale; there are no weights,
+#                       the wells being equally precise. brms is the default so
+#                       the analysis runs on standard software: brms for the
+#                       posteriors that are plotted, lme4 for the group tests
+#                       that give P values (R/04_group_models.R). Priors:
+#                       mu ~ Normal(0, 31.6); log(sigma) ~ Normal(0, 5).
 #   engine = "jags"  -- the original rjags implementation (needs JAGS installed)
 #   engine = "gibbs" -- the exact conjugate Gibbs sampler for the model above,
 #                       written in base R, so the figures reproduce with no
@@ -39,7 +46,8 @@ set.seed(20230826)
 
 N_CHAINS <- 4L
 N_BURN   <- 2000L    # 1000 adapt + 1000 update in the original
-N_ITER   <- 10000L   # draws kept per chain
+N_ITER   <- 10000L   # draws kept per chain (Gibbs)
+N_ITER_BRMS <- 10000L # per chain; 40,000 draws keeps the tail quantiles within 3%
 
 RESPONSE <- "OD550_Corrected"
 
@@ -137,7 +145,30 @@ sample_jags <- function(x_mat, w_mat, n_chains, n_iter, n_burn) {
 
 ## ---- 3. fit ----------------------------------------------------------------
 
-fit_response <- function(assay, column, engine = c("auto", "gibbs", "jags")) {
+#' brms sampler. Returns draws x strains on the log scale, like the others.
+sample_brms <- function(x_mat, n_chains, n_iter, n_burn, cache) {
+  if (!requireNamespace("brms", quietly = TRUE)) {
+    stop("Package 'brms' is required for engine = \"brms\".")
+  }
+  strains <- colnames(x_mat)
+  dd <- data.frame(y = log(as.vector(x_mat)),
+                   strain = factor(rep(strains, each = nrow(x_mat)), levels = strains))
+  fit <- brms::brm(
+    brms::bf(y ~ 0 + strain, sigma ~ 0 + strain),
+    data = dd, family = stats::gaussian(),
+    prior = c(brms::prior(normal(0, 31.6), class = b),
+              brms::prior(normal(0, 5), class = b, dpar = sigma)),
+    chains = n_chains, iter = n_burn + n_iter, warmup = n_burn,
+    seed = 20200616, refresh = 0, silent = 2, backend = "rstan",
+    file = cache, file_refit = "on_change")
+  rh <- max(brms::rhat(fit), na.rm = TRUE)
+  if (rh > 1.01) warning(sprintf("brms: max Rhat %.3f exceeds 1.01", rh), call. = FALSE)
+  dr <- as.matrix(fit, variable = paste0("b_strain", strains))
+  colnames(dr) <- strains
+  dr
+}
+
+fit_response <- function(assay, column, engine = c("brms", "gibbs", "jags", "auto")) {
   engine <- match.arg(engine)
   if (engine == "auto") {
     engine <- if (requireNamespace("rjags", quietly = TRUE)) "jags" else "gibbs"
@@ -146,10 +177,15 @@ fit_response <- function(assay, column, engine = c("auto", "gibbs", "jags")) {
   x_mat <- as_matrix(assay, column)
   w_mat <- matrix(1, nrow(x_mat), ncol(x_mat), dimnames = dimnames(x_mat))
 
+  n_draw <- if (engine == "brms") N_ITER_BRMS else N_ITER
   message("  ", column, ": sampling with ", engine, " (",
-          N_CHAINS, " chains x ", format(N_ITER, big.mark = ","), " draws)")
+          N_CHAINS, " chains x ", format(n_draw, big.mark = ","), " draws)")
 
   log_draws <- switch(engine,
+    brms  = sample_brms(x_mat, N_CHAINS, N_ITER_BRMS, 1000L,
+                        # The draw count is in the name: brms refits a cached model when the data,
+                        # formula or priors change, but not when iter does.
+                        cache = file.path(OUT_DIR, sprintf("brms_biofilm_%d", N_ITER_BRMS))),
     gibbs = sample_gibbs(x_mat, w_mat, N_CHAINS, N_ITER, N_BURN),
     jags  = sample_jags(x_mat, w_mat, N_CHAINS, N_ITER, N_BURN))
 

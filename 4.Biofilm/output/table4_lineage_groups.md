@@ -1,6 +1,6 @@
 ## Table 4. Biofilm formation by lineage group
 
-Blank-corrected OD550 from `data/biofil.csv`. Groups follow the split an early draft describes: clones carrying a *sinR* mutation never carry one in *ywcC* (BSU_38220) or upstream of *slrR*, so the likely-vegetative clones divide in two. Holm-adjusted pairwise t-tests on pooled SD: spore vs sinR P = 0.29; ywcC/epsA-slrR vs sinR P = 1.6e-12; ywcC/epsA-slrR vs spore P = 1.5e-07. The *sinR*-versus-spore comparison is the weak one, and it is weak because the two spore clones differ 16-fold from each other.
+Blank-corrected OD550 from `data/biofil.csv`. Groups follow the split an early draft describes: clones carrying a *sinR* mutation never carry one in *ywcC* (BSU_38220) or upstream of *slrR*, so the likely-vegetative clones divide in two. Means ± SEM are over wells and are descriptive. Tests treat the strain as the unit of replication -- a linear mixed model of log OD with strain as a random effect, Kenward–Roger degrees of freedom, Tukey-adjusted: sinR vs spore P = 0.769; sinR vs (ywcC/epsA-slrR) P = 0.024; spore vs (ywcC/epsA-slrR) P = 0.151. The *sinR*-versus-spore comparison is the weak one: the spore group is two strains, and they differ 16-fold from each other.
 
 | Group | Strains | Wells | Mean OD550 |
 | :--- | ---: | ---: | :--- |

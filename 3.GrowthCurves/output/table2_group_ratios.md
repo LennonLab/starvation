@@ -1,13 +1,14 @@
 ## Table 2. Ratios of group means
 
-Posterior median ratio of the first group's mean to the second's, on the measured scale, with a 95% equal-tailed credible interval. A ratio of 1 means the groups do not differ; intervals excluding 1 are the ones to read. Posterior probabilities are in `output/model_contrasts.csv`.
+Ratio of the first group's mean to the second's on the measured scale, with a 95% confidence interval, from the same mixed models as Table 1. *P* uses Kenward–Roger degrees of freedom and is Tukey-adjusted within model 5a, which has three groups. A ratio of 1 means no difference.
 
-| Strains | Model | Contrast | µmax | Yield (A) | Lag (L) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| all (11) | 2 | Ancestor : Evolved | 1.47 [0.73, 2.88] | 1.20 [0.78, 1.83] | 1.60 [0.96, 2.65] |
-| evolved (10) | 4 | Spore : Total | 1.32 [0.82, 2.00] | 1.36 [1.06, 1.72] | 0.88 [0.64, 1.20] |
-| evolved (10) | 5a | sinR : sporulation | 0.68 [0.45, 1.07] | 0.72 [0.55, 0.94] | 1.09 [0.76, 1.55] |
-| evolved (10) | 5a | sinR : ywcC | 0.75 [0.51, 1.10] | 0.94 [0.74, 1.18] | 0.90 [0.65, 1.25] |
-| evolved (10) | 5a | sporulation : ywcC | 1.10 [0.67, 1.72] | 1.30 [0.96, 1.73] | 0.83 [0.56, 1.22] |
-| sinR/ywcC (8) | 5 | sinR : ywcC | 0.75 [0.48, 1.15] | 0.94 [0.71, 1.20] | 0.91 [0.65, 1.26] |
+| Strains | Model | Contrast | µmax ratio | µmax P | Yield (A) ratio | Yield (A) P | Lag (L) ratio | Lag (L) P |
+| :--- | :--- | :--- | :--- | ---: | :--- | ---: | :--- | ---: |
+| all (11) | 2 | Ancestor : Evolved | 1.46 (0.73–2.95) | 0.224 | 1.20 (0.78–1.82) | 0.355 | 1.60 (1.05–2.44) | 0.038 |
+| all (11) | 3 | mutation : none | 0.73 (0.51–1.05) | 0.080 | 0.75 (0.63–0.89) | 0.006 | 1.03 (0.81–1.31) | 0.776 |
+| evolved (10) | 4 | Spore : Total | 1.31 (0.85–2.02) | 0.179 | 1.36 (1.10–1.69) | 0.012 | 0.88 (0.68–1.14) | 0.294 |
+| evolved (10) | 5a | none : sinR | 1.46 (0.88–2.41) | 0.134 | 1.39 (1.02–1.89) | 0.038 | 0.91 (0.64–1.29) | 0.730 |
+| evolved (10) | 5a | none : ywcC | 1.10 (0.62–1.96) | 0.865 | 1.31 (0.93–1.84) | 0.114 | 0.83 (0.56–1.24) | 0.417 |
+| evolved (10) | 5a | sinR : ywcC | 0.75 (0.47–1.21) | 0.219 | 0.94 (0.72–1.24) | 0.766 | 0.92 (0.64–1.30) | 0.738 |
+| sinR/ywcC (8) | 5 | sinR : ywcC | 0.75 (0.49–1.16) | 0.143 | 0.94 (0.74–1.19) | 0.530 | 0.92 (0.70–1.20) | 0.454 |
 

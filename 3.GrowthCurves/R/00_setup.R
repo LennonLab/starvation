@@ -35,7 +35,14 @@ suppressPackageStartupMessages({
 # mutation they carry:
 #   ywcC    : M4, M13, M79   (BSU_38220; RefSeq now calls it slrC)
 #   sinR    : M17, M19, M21, M41, M54
-#   spormut : M23, M26   (sporulation mutants, scored as spores)
+#   none    : M23, M26   (spore-fraction clones with no detected mutation)
+#
+# M23 and M26 are labelled "spormut" in treatments_original_corrected.csv, and
+# this code used to read that as "sporulation mutant". They are not mutants:
+# sequencing finds no mutation in clones 23 or 26 (2.Mutations output,
+# clones_without_mutations.txt), and the lab's own treatments.csv records both
+# as mutant = no, mutation = none. The data file is left as it is and the label
+# is corrected here, in strain_meta().
 #
 # MODEL_ORDER is the order the original JAGS code fed to the sampler, kept so
 # that column indices stay comparable with the old outputs. PLOT_ORDER is the
@@ -69,8 +76,11 @@ STRIP_ORDER <- c("ancestor", "M23", "M26", "M17", "M19",
 #'
 #' `origin`, `cell`, and `mutation` are the three nested annotation rows of the
 #' manuscript figure. NA means no bracket is drawn for that strain in that row:
-#' the ancestor has no cell type or mutation to contrast, and the sporulation
-#' mutants are not part of the sinR/ywcC comparison.
+#' the ancestor has no cell type or mutation to contrast, and M23 and M26 carry
+#' no mutation to label.
+#'
+#' `mutated` is TRUE for the eight clones carrying a sinR or ywcC mutation and
+#' FALSE for the ancestor, M23 and M26. It defines model 3.
 strain_meta <- function(clones) {
   t <- read.csv(file.path(DATA_DIR, "treatments_original_corrected.csv"),
                 stringsAsFactors = FALSE)
@@ -84,14 +94,15 @@ strain_meta <- function(clones) {
     origin   = ifelse(t$evo.type == "ancestor", "Ancestor", "Evolved"),
     cell     = ifelse(t$evo.type == "ancestor", NA,
                       ifelse(t$cell.type == "spore", "Spore", "Total")),
-    # The sporulation mutants get no label here: the cell-type row already
+    # M23 and M26 carry no mutation, so no label; the cell-type row already
     # marks them as Spore.
     mutation = gene_display(c(nomut = NA, sinR = "sinR", ywcC = "ywcC",
                               spormut = NA)[t$mutation]),
-    # full mutation factor, used by the models rather than the figures; also
-    # mapped to current names so group labels and contrasts agree with the
-    # figures
-    mutation_full = gene_display(t$mutation),
+    # Full mutation factor, used by the models. "spormut" is the data file's
+    # label for M23/M26 and is shown as "none", which is what they carry.
+    mutation_full = gene_display(c(nomut = "none", sinR = "sinR", ywcC = "ywcC",
+                                   spormut = "none")[t$mutation]),
+    mutated = t$mutation %in% c("sinR", "ywcC"),
     stringsAsFactors = FALSE
   )
 }

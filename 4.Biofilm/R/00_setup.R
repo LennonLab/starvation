@@ -66,8 +66,11 @@ N_REPS <- 8L   # replicate wells per strain (A-H on the single plate)
 # or upstream of slrR" -- so it means the intergenic epsA-slrR variant at
 # 3,529,981, the marker that splits the sequenced clones into two clades.
 # R/06_lineage_groups.R runs that comparison.
-MUTATION_LABEL <- c(ancestor = "ancestor", sinR = "sinR",
-                    `ywcC/slrR` = "ywcC", spore = "spore")
+# biofil.csv puts "spore" in the mutation column for m23 and m26. That is the
+# fraction they came from, not a mutation: sequencing finds none in clones 23
+# or 26. They are labelled "none" for the models, and the ancestor likewise.
+MUTATION_LABEL <- c(ancestor = "none", sinR = "sinR",
+                    `ywcC/slrR` = "ywcC", spore = "none")
 
 #' Grouping variables for a set of strains, in the order given.
 #'
@@ -89,7 +92,7 @@ strain_meta <- function(clones) {
     # biofil.csv's Treatment column says "Vegetative", which describes how the
     # strain was assayed. The growth-curve project labels the same ten clones
     # "Total", which is the sequencing fraction they were isolated from. The
-    # partition is identical either way -- the two sporulation mutants against
+    # partition is identical either way -- the two spore-fraction clones against
     # the other eight -- so the figures use one label, and the fraction is the
     # one that is a property of the clone rather than of the assay. The assay
     # condition belongs in the Methods, not on a bracket. The data file is
@@ -100,6 +103,8 @@ strain_meta <- function(clones) {
                  spore = NA)[d$mutation],
     # full mutation factor, used by the models rather than the figures
     mutation_full = MUTATION_LABEL[d$mutation],
+    # TRUE for the eight sinR / ywcC clones; defines model 3
+    mutated = d$mutation %in% c("sinR", "ywcC/slrR"),
     stringsAsFactors = FALSE
   )
 }

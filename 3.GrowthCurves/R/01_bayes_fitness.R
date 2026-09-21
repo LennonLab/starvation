@@ -24,12 +24,24 @@
 # positive during sampling. exp(mu[j]) is the clone's growth parameter, and
 # exp(mu[j]) / exp(mu[ancestor]) is its relative fitness.
 #
-# Two samplers give the same posterior:
-#   engine = "jags"  -- the original rjags implementation (needs JAGS installed)
-#   engine = "gibbs" -- the exact conjugate Gibbs sampler for the model above,
-#                       written in base R, so the figures reproduce with no
-#                       external dependencies
-#   engine = "auto"  -- rjags if available, otherwise gibbs (default)
+# Three samplers give the same posterior:
+#   engine = "brms"  -- Stan via brms (default). The model is written so the
+#                       residual SD of curve i is sigma[j] / sqrt(w[i,j]) --
+#                       an offset on log(sigma) -- which is exactly the
+#                       precision tau[j] * w[i,j] above. It reproduces the
+#                       conjugate sampler's medians to within 0.2%.
+#   engine = "gibbs" -- the conjugate Gibbs sampler, written in base R. Kept as
+#                       the reference brms is checked against.
+#   engine = "jags"  -- the original rjags implementation (needs JAGS).
+#
+# brms is the default so the whole analysis runs on standard, citable
+# software: brms for the posteriors that are plotted, lme4 for the group
+# comparisons that produce P values (R/04_group_models.R).
+#
+# brms priors: mu[j] ~ Normal(0, 31.6), matching precision 0.001; and
+# log(sigma[j]) ~ Normal(0, 5), which is effectively flat over any plausible
+# range -- the Gamma(0.01, 0.01) on precision above is flat on log(sigma) too.
+# Fits are cached in output/brms_*.rds and refit only when data or model change.
 ################################################################################
 
 ## Locate 00_setup.R whether you are in the project root or in R/.
@@ -41,7 +53,8 @@ set.seed(20230826)   # the date of the last growth-curve run
 
 N_CHAINS <- 4L
 N_BURN   <- 2000L    # 1000 adapt + 1000 update in the original
-N_ITER   <- 10000L   # draws kept per chain
+N_ITER   <- 10000L   # draws kept per chain (Gibbs)
+N_ITER_BRMS <- 2500L # per chain; NUTS draws are far less autocorrelated
 
 ## ---- 1. read the curve fits and shape them into 6 x 11 matrices ------------
 
@@ -146,7 +159,40 @@ sample_jags <- function(x_mat, w_mat, n_chains, n_iter, n_burn) {
 #' @param value    column holding the fitted parameter (e.g. "umax")
 #' @param se       column holding its standard error (e.g. "umax.se")
 #' @param relative TRUE to also return draws divided by the ancestor's
-fit_parameter <- function(fits, value, se, engine = c("auto", "gibbs", "jags")) {
+#' brms sampler for the same model. Returns draws x clones on the log scale,
+#' like the others, so nothing downstream knows which engine ran.
+sample_brms <- function(x_mat, w_mat, n_chains, n_iter, n_burn, cache) {
+  if (!requireNamespace("brms", quietly = TRUE)) {
+    stop("Package 'brms' is required for engine = \"brms\".")
+  }
+  clones <- colnames(x_mat)
+  dd <- data.frame(
+    y      = log(as.vector(x_mat)),
+    strain = factor(rep(clones, each = nrow(x_mat)), levels = clones),
+    w      = as.vector(w_mat))
+  # Mean-one within each clone. The per-clone sigma absorbs the scale, so this
+  # changes nothing about mu[j]; it only keeps sigma[j] readable as a per-curve SD.
+  dd$w  <- ave(dd$w, dd$strain, FUN = function(v) v / mean(v))
+  dd$lw <- -0.5 * log(dd$w)
+
+  fit <- brms::brm(
+    brms::bf(y ~ 0 + strain, sigma ~ 0 + strain + offset(lw)),
+    data = dd, family = stats::gaussian(),
+    prior = c(brms::prior(normal(0, 31.6), class = b),
+              brms::prior(normal(0, 5), class = b, dpar = sigma)),
+    chains = n_chains, iter = n_burn + n_iter, warmup = n_burn,
+    seed = 20230826, refresh = 0, silent = 2, backend = "rstan",
+    file = cache, file_refit = "on_change")
+
+  rh <- max(brms::rhat(fit), na.rm = TRUE)
+  if (rh > 1.01) warning(sprintf("brms: max Rhat %.3f exceeds 1.01", rh), call. = FALSE)
+
+  dr <- as.matrix(fit, variable = paste0("b_strain", clones))
+  colnames(dr) <- clones
+  dr
+}
+
+fit_parameter <- function(fits, value, se, engine = c("brms", "gibbs", "jags", "auto")) {
   engine <- match.arg(engine)
   if (engine == "auto") {
     engine <- if (requireNamespace("rjags", quietly = TRUE)) "jags" else "gibbs"
@@ -155,10 +201,15 @@ fit_parameter <- function(fits, value, se, engine = c("auto", "gibbs", "jags")) 
   x_mat <- as_matrix(fits, value)
   w_mat <- inv_var_weights(as_matrix(fits, se))
 
+  n_draw <- if (engine == "brms") N_ITER_BRMS else N_ITER
   message("  ", value, ": sampling with ", engine, " (",
-          N_CHAINS, " chains x ", format(N_ITER, big.mark = ","), " draws)")
+          N_CHAINS, " chains x ", format(n_draw, big.mark = ","), " draws)")
 
   log_draws <- switch(engine,
+    brms  = sample_brms(x_mat, w_mat, N_CHAINS, N_ITER_BRMS, 1000L,
+                        # The draw count is in the name: brms refits a cached model when the data,
+                        # formula or priors change, but not when iter does.
+                        cache = file.path(OUT_DIR, sprintf("brms_%s_%d", value, N_ITER_BRMS))),
     gibbs = sample_gibbs(x_mat, w_mat, N_CHAINS, N_ITER, N_BURN),
     jags  = sample_jags(x_mat, w_mat, N_CHAINS, N_ITER, N_BURN))
 

@@ -1,7 +1,7 @@
 ################################################################################
 # 03_validate.R
 #
-# Check the Gibbs sampler against an exact calculation.
+# Check the sampler against an exact calculation under the same prior.
 #
 # For one strain the model has only two parameters, and tau can be integrated
 # out in closed form:
@@ -55,10 +55,46 @@ exact_quantiles <- function(x, probs = c(.025, .5, .975),
   stats::approx(cdf, mu, xout = probs)$y
 }
 
+# Exact marginal posterior of mu under the prior brms uses: mu ~ Normal(0, 31.6)
+# and log(sigma) ~ Normal(0, 5). sigma has no closed-form integral under that
+# prior, so the joint posterior is evaluated on a grid in (mu, log sigma) and
+# summed over log sigma. The prior is on log sigma itself, so no Jacobian.
+#
+# The sampler must be checked against the posterior of the model it actually
+# fits. Checking brms against the Gamma-prior calculation above would test the
+# difference between two priors, not whether the sampler works.
+exact_quantiles_brms <- function(x, probs = c(.025, .5, .975),
+                                 mu_sd = 31.6, lsig_sd = 5, n_grid = 1500) {
+  y <- log(x)
+  centre <- mean(y); spread <- max(sd(y), 1e-3)
+  mu   <- seq(centre - 12 * spread, centre + 12 * spread, length.out = n_grid)
+  lsig <- seq(log(spread) - 6, log(spread) + 6, length.out = n_grid)
+  sig  <- exp(lsig)
+
+  # sum over wells of log Normal(y | mu, sigma), as an n_grid x n_grid matrix
+  ss <- outer(mu, rep(1, n_grid)) * 0
+  for (yi in y) ss <- ss + outer((yi - mu)^2, rep(1, n_grid))
+  loglik <- -length(y) * outer(rep(1, n_grid), lsig) - ss / outer(rep(1, n_grid), 2 * sig^2)
+  logpost <- loglik +
+    outer(dnorm(mu, 0, mu_sd, log = TRUE), rep(1, n_grid)) +
+    outer(rep(1, n_grid), dnorm(lsig, 0, lsig_sd, log = TRUE))
+
+  dens <- rowSums(exp(logpost - max(logpost)))
+  cdf  <- cumsum(dens) / sum(dens)
+  if (cdf[5] > 1e-6 || cdf[n_grid - 5] < 1 - 1e-6) {
+    stop("Grid too narrow for the exact posterior.")
+  }
+  stats::approx(cdf, mu, xout = probs)$y
+}
+
+exact_for_engine <- if (identical(post$engine, "brms")) exact_quantiles_brms else exact_quantiles
+TOL_MEDIAN <- if (identical(post$engine, "brms")) 0.01 else TOL_MEDIAN  # 10,000 NUTS draws
+TOL_TAIL   <- if (identical(post$engine, "brms")) 0.03 else TOL_TAIL
+
 strains <- colnames(post$absolute)
 rows <- lapply(strains, function(s) {
   x <- assay$OD550_Corrected[assay$clones == s]
-  ex <- exp(exact_quantiles(x))
+  ex <- exp(exact_for_engine(x))
   gi <- post$quantiles$absolute[s, ]
   data.frame(
     strain = s,
@@ -70,7 +106,7 @@ rows <- lapply(strains, function(s) {
 })
 cmp <- do.call(rbind, rows)
 
-cat("Gibbs sampler vs. exact marginal posterior of exp(mu)\n\n")
+cat(post$engine, "sampler vs. exact marginal posterior of exp(mu), same prior\n\n")
 print(cmp, digits = 3, row.names = FALSE)
 
 ok_median <- max(cmp$median_pct) < TOL_MEDIAN * 100
