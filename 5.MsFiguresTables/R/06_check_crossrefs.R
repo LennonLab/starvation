@@ -65,10 +65,13 @@ expand_inputs <- function(path) {
 supp <- expand_inputs(SUPP)
 
 # Floats are numbered by the order their environments open, not by label order.
-numbering <- function(lines, env, prefix) {
+# One counter serves table, table* and sidewaystable alike -- LaTeX numbers them
+# in a single sequence, and R/04_tables.R sets the wide growth table sideways.
+numbering <- function(lines, envs, prefix) {
+  pat <- paste0("\\\\begin\\{(", paste(envs, collapse = "|"), ")\\}")
   n <- 0L; map <- character(0)
   for (ln in lines) {
-    if (grepl(paste0("\\\\begin\\{", env, "\\}"), ln)) n <- n + 1L
+    if (grepl(pat, ln)) n <- n + 1L
     lab <- regmatches(ln, regexpr("\\\\label\\{[^}]+\\}", ln))
     if (length(lab) && n > 0L) {
       key <- sub("^\\\\label\\{(.*)\\}$", "\\1", lab[1])
@@ -78,8 +81,8 @@ numbering <- function(lines, env, prefix) {
   map
 }
 
-fig_map <- numbering(supp, "figure", "fig:")
-tab_map <- numbering(supp, "table",  "tab:")
+fig_map <- numbering(supp, c("figure", "figure\\*", "sidewaysfigure"), "fig:")
+tab_map <- numbering(supp, c("table",  "table\\*",  "sidewaystable"),  "tab:")
 
 cat("Supplementary figures:\n")
 for (k in names(fig_map)) cat(sprintf("  %-22s %s\n", k, fig_map[[k]]))
@@ -90,14 +93,19 @@ for (k in names(tab_map)) cat(sprintf("  %-22s %s\n", k, tab_map[[k]]))
 
 ms <- paste(strip_comments(readLines(MS, warn = FALSE)), collapse = " ")
 
+# "Tables~S7 and S8" and "Figs.~S1, S2 and S3" cite more than one float, so the
+# whole run of S-numbers after the word is captured, not just the first. Reading
+# only the first was silently reporting the others as uncited.
 cited <- function(txt, word) {
-  m <- gregexpr(paste0(word, "[~ ]*S([0-9]+)"), txt)
-  unique(as.integer(sub(paste0(word, "[~ ]*S"), "",
-                        regmatches(txt, m)[[1]])))
+  runs <- regmatches(txt, gregexpr(
+    paste0(word, "[~ ]*S[0-9]+((,| and|,? and)[~ ]*S[0-9]+)*"), txt))[[1]]
+  nums <- unlist(regmatches(runs, gregexpr("S[0-9]+", runs)))
+  sort(unique(as.integer(sub("^S", "", nums))))
 }
 
-fig_cited <- sort(cited(ms, "Fig\\."))
-tab_cited <- sort(cited(ms, "Table"))
+# The plural forms matter: "Tables~S7 and S8", "Figs.~S1 and S2".
+fig_cited <- sort(cited(ms, "Figs?\\."))
+tab_cited <- sort(cited(ms, "Tables?"))
 
 # Section pointers ("Section S1.4", "(S1.8)") are the ones that rot most
 # quietly: inserting a subsection renumbers everything after it and nothing

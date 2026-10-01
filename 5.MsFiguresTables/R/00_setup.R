@@ -141,6 +141,18 @@ TOTAL_COLOUR <- "#8C1515"
 # README for what that would inherit.
 PHENOTYPE_SCALE <- "absolute"
 
+# Which version of Figure 2 the manuscript gets. All three are written to
+# output/ on every run, so switching costs nothing and loses nothing:
+#
+#   "v1"  posterior ridges        the densities the model actually estimates
+#   "v2"  mean +/- SD by clone    the traditional plot, every replicate shown
+#   "v3"  posterior interval      median and 95% CrI, clones on the x axis
+#
+# v3 is the default because a reader who has not met posterior densities can
+# still read it. Change this one word to send a different one to main.tex --
+# it is written as figure2_phenotypes.pdf, which is the name main.tex includes.
+FIGURE2_VARIANT <- "v3"
+
 # Whether Figure 2 prints the ancestor caveat on the panel itself. The caveat
 # is real either way and is always written to output/figure2_caption_notes.md;
 # this only controls whether it is set on the figure, which is a decision for

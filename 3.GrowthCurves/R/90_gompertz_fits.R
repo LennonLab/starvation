@@ -7,8 +7,10 @@
 #                                (the exports do not name the instrument; the
 #                                 group's methods document says Epoch2)
 #         data/plate_runs.csv   -- which strain came from which run
-# Output: output/gompertz_refit/<name>.fit.parms.txt  -- fitted b0, A, umax, L
-#         output/gompertz_refit/<name>.fit.parms.pdf  -- per-curve diagnostics
+# Output: <name>.fit.parms.txt  -- fitted b0, A, umax, L per curve
+#         <name>.fit.parms.pdf  -- per-curve diagnostics
+#         written to data/gompertz_fits_correcttime/ by default, or to
+#         output/gompertz_refit/ when reproducing the archive (see TIME_PARSE)
 #
 # This is the slow step (~2 min) and it is NOT part of run_all.R. The archived
 # fits in data/gompertz_fits/ are what the analysis uses, and the curves that
@@ -32,16 +34,31 @@ if (length(missing)) {
        paste0('"', missing, '"', collapse = ", "), "))")
 }
 
-REFIT_DIR <- file.path(OUT_DIR, "gompertz_refit")
+# Which way elapsed time is parsed.
+#
+#   "archive"  as the original analysis did: "0:14:10" read as the number 0.14.
+#              Reproduces data/gompertz_fits/ exactly.
+#   "correct"  "0:14:10" as 0.236 h. Writes data/gompertz_fits_correcttime/,
+#              which is what R/91_build_comp_data.R reads by default.
+#
+# The two clocks agree at every whole hour, so yield is unchanged and umax
+# differs by 0.3%; lag is displaced by a constant 0.350 +/- 0.026 h.
+TIME_PARSE <- Sys.getenv("SPOREMUT_TIME_PARSE", "correct")
+
+REFIT_DIR <- if (TIME_PARSE == "correct") {
+  file.path(DATA_DIR, "gompertz_fits_correcttime")
+} else file.path(OUT_DIR, "gompertz_refit")
 dir.create(REFIT_DIR, showWarnings = FALSE, recursive = TRUE)
 
 ## ---- raw plate runs --------------------------------------------------------
-# Time is exported as "HH:MM:SS"; the original analysis reads it as HH.MM, so
-# lag and growth rate are in those units rather than decimal hours. Kept as is
-# so the fits match the archived ones.
 read_plate <- function(file) {
   d <- read.csv(file.path(DATA_DIR, "raw", file))
-  d$Time <- as.numeric(sub("^(\\d+):(\\d+).*", "\\1.\\2", d$Time))
+  d$Time <- if (TIME_PARSE == "correct") {
+    p <- do.call(rbind, lapply(strsplit(d$Time, ":"), as.numeric))
+    p[, 1] + p[, 2] / 60 + p[, 3] / 3600
+  } else {
+    as.numeric(sub("^(\\d+):(\\d+).*", "\\1.\\2", d$Time))
+  }
   d
 }
 
@@ -82,8 +99,15 @@ compare_one <- function(name) {
 }
 
 cmp <- do.call(rbind, lapply(runs$fit_name, compare_one))
-cat("\nRefit vs. archived fits:\n")
+cat(sprintf("\nRefit (%s time) vs. archived fits:\n", TIME_PARSE))
 print(cmp, row.names = FALSE)
-cat(sprintf("\n%d of %d fit files reproduce exactly.\n",
-            sum(cmp$identical), nrow(cmp)))
-message("\nRefits written to output/gompertz_refit/ (the archive is untouched).")
+if (TIME_PARSE == "correct") {
+  cat(sprintf(paste0("\n%d of %d fit files differ from the archive, which is the point: ",
+                     "these are the corrected-time fits.\n"),
+              sum(!cmp$identical), nrow(cmp)))
+} else {
+  cat(sprintf("\n%d of %d fit files reproduce exactly.\n",
+              sum(cmp$identical), nrow(cmp)))
+}
+message("\nRefits written to ", sub(paste0(PROJ, "/"), "", REFIT_DIR),
+        "/ (the archive is untouched).")

@@ -76,9 +76,10 @@ for (p in c("lme4", "pbkrtest", "MuMIn", "emmeans")) {
 
 fits <- read.csv(file.path(DATA_DIR, "comp_data_annotated.csv"),
                  stringsAsFactors = FALSE)
-fits <- fits[fits$clones %in% MODEL_ORDER, ]
+ALL_STRAINS <- c(MODEL_ORDER, SPORE_ISOLATES)
+fits <- fits[fits$clones %in% ALL_STRAINS, ]
 
-meta <- strain_meta(MODEL_ORDER)
+meta <- strain_meta(ALL_STRAINS)
 meta$has_mutation <- ifelse(meta$mutated, "mutation", "none")
 
 PARAMS <- list(umax = "umax", A = "A", L = "L")
@@ -103,6 +104,30 @@ SCOPES <- list(
       list(id = "1",  label = "global mean",            grouping = NULL),
       list(id = "4",  label = "spore vs total",         grouping = "cell"),
       list(id = "5a", label = "sinR vs ywcC vs none",   grouping = "mutation_full")
+    )
+  ),
+  # The six endpoint-spore isolates were phenotyped in the same runs but left
+  # out of the published analysis. Adding them is the only way to ask whether
+  # carrying a mutation costs anything, because three of them carry one and
+  # three do not, all within the spore fraction. The eight total-fraction
+  # clones all carry sinR or ywcC, so cell type and regulator mutation stay
+  # confounded with each other; what these strains separate is "has a
+  # mutation" from "came from the total fraction".
+  list(
+    id = "evolved + spore isolates (16)",
+    strains = setdiff(ALL_STRAINS, "ancestor"),
+    models = list(
+      list(id = "1", label = "global mean",           grouping = NULL),
+      list(id = "3", label = "mutation vs none",      grouping = "has_mutation"),
+      list(id = "4", label = "spore vs total",        grouping = "cell")
+    )
+  ),
+  list(
+    id = "spore fraction (8)",
+    strains = meta$clone[!is.na(meta$cell) & meta$cell == "Spore"],
+    models = list(
+      list(id = "1", label = "global mean",           grouping = NULL),
+      list(id = "3", label = "mutation vs none",      grouping = "has_mutation")
     )
   ),
   list(

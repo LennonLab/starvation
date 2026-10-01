@@ -107,12 +107,17 @@ that comparison on `data/biofil.csv`.
 | spore | 2 | 16 | 0.144 ± 0.038 |
 | *slrC*/*epsA–slrR* | 3 | 24 | 0.768 ± 0.118 |
 
-*sinR* mutants form less biofilm, *slrC*/*epsA–slrR* mutants a great deal more
-— P = 1.6 × 10⁻¹² between them, and 1.5 × 10⁻⁷ for *slrC*/*epsA–slrR* against
-spores. **The *sinR*-versus-spore comparison is not significant** (P = 0.29),
-and the reason is visible in the data: the two spore clones differ 16-fold from
-each other, m23 at 0.272 against m26 at 0.017. Two strains with that spread
-cannot support a comparison.
+*sinR* mutants form less biofilm, *ywcC*/*epsA–slrR* mutants a great deal more.
+The comparison is made with the **strain** as the unit of replication — a mixed
+model of log OD with strain as a random effect, Kenward–Roger degrees of
+freedom, Tukey-adjusted — giving P = 0.024 between those two groups and
+P = 0.151 for *ywcC*/*epsA–slrR* against spores. An earlier version tested wells
+rather than strains and reported P = 1.6 × 10⁻¹²; that is pseudoreplication,
+since the eight wells of a strain are technical replicates, and it is not what
+the project reports now. **The *sinR*-versus-spore comparison is not
+significant** (P = 0.769), and the reason is visible in the data: the two spore
+clones differ 16-fold from each other, m23 at 0.272 against m26 at 0.017. Two
+strains with that spread cannot support a comparison.
 
 The draft's own P values are from an earlier round of the assay and are not
 reproduced.
@@ -272,13 +277,12 @@ spore group to the S isolates alone does not close the gap either. The
 qualitative result is robust; the test the draft actually ran is not
 recoverable from what survives.
 
-**The sampler no longer needs JAGS.** The original ran this model through
-`rjags`. Because it is conjugate, `R/01_bayes_biofilm.R` also carries an exact
-Gibbs sampler in base R and defaults to it when JAGS is not installed. For a
-single strain the precision can be integrated out analytically, leaving a
+**The sampler is brms, and does not need JAGS.** The original ran this model
+through `rjags`. `R/01_bayes_biofilm.R` now defaults to Stan via `brms`, with
+the conjugate Gibbs sampler the original used kept as the `"gibbs"` engine. For
+a single strain the precision can be integrated out analytically, leaving a
 one-dimensional posterior that `R/03_validate.R` evaluates on a grid — so the
 sampler is checked against the exact answer, not against another sampler.
-Medians agree to 0.2%, interval bounds to 1.1%.
 
 **Everything is a script.** The original lived in
 `code/3.Biofilm/3.Biofilm_CK.Rmd`, which mixed `brms`, `lme4` and JAGS

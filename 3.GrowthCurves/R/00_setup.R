@@ -52,6 +52,13 @@ MODEL_ORDER <- c("ancestor", "M26", "M23", "M54", "M41",
 PLOT_ORDER  <- c("M4", "M13", "M79", "M17", "M19",
                  "M21", "M41", "M54", "M23", "M26")
 
+# The six endpoint-spore isolates. Phenotyped in the same five runs as the
+# clones above, six curves each, but left out of the published analysis. They
+# are the only strains that separate carrying a mutation from the fraction a
+# clone was sequenced from: three carry one and three do not, all within the
+# spore fraction. See SPORE_FRACTION_MUTANTS below and R/04_group_models.R.
+SPORE_ISOLATES <- c("S1", "S6", "S11", "S22", "S51", "S95")
+
 N_REPS <- 6L   # replicate growth curves retained per clone (the lowest-RMSE six)
 
 ## ---- gene naming -----------------------------------------------------------
@@ -81,6 +88,22 @@ STRIP_ORDER <- c("ancestor", "M23", "M26", "M17", "M19",
 #'
 #' `mutated` is TRUE for the eight clones carrying a sinR or ywcC mutation and
 #' FALSE for the ancestor, M23 and M26. It defines model 3.
+# The six endpoint-spore isolates, and which of them carry a mutation.
+#
+# treatments_original_corrected.csv records all six as "nomut", following
+# treatments_original.csv (the plate map), which also files them under
+# evo.type "anc". The per-replicate file treatments.csv disagrees: S1 and S6
+# carry "yetA.ymlG" and S95 "levB_yveA", with S11, S22 and S51 carrying none.
+#
+# treatments.csv is the one to believe. Those names are three of the four
+# mutations that survive for the endpoint spore fraction -- yetA (777,008),
+# ylmG (1,611,379) and levB-aspP (3,539,121) -- and all four are singletons,
+# so the paired label spans S1 and S6 rather than giving each clone both. The
+# fourth, kdgA, belongs to a clone that was never phenotyped.
+#
+# Corrected here rather than in the CSV, as everywhere else in this project.
+SPORE_FRACTION_MUTANTS <- c(S1 = "yetA", S6 = "ylmG", S95 = "levB-aspP")
+
 strain_meta <- function(clones) {
   t <- read.csv(file.path(DATA_DIR, "treatments_original_corrected.csv"),
                 stringsAsFactors = FALSE)
@@ -96,13 +119,22 @@ strain_meta <- function(clones) {
                       ifelse(t$cell.type == "spore", "Spore", "Total")),
     # M23 and M26 carry no mutation, so no label; the cell-type row already
     # marks them as Spore.
-    mutation = gene_display(c(nomut = NA, sinR = "sinR", ywcC = "ywcC",
-                              spormut = NA)[t$mutation]),
+    mutation = ifelse(clones %in% names(SPORE_FRACTION_MUTANTS),
+                      SPORE_FRACTION_MUTANTS[clones],
+                      gene_display(c(nomut = NA, sinR = "sinR", ywcC = "ywcC",
+                                     spormut = NA)[t$mutation])),
     # Full mutation factor, used by the models. "spormut" is the data file's
     # label for M23/M26 and is shown as "none", which is what they carry.
-    mutation_full = gene_display(c(nomut = "none", sinR = "sinR", ywcC = "ywcC",
-                                   spormut = "none")[t$mutation]),
-    mutated = t$mutation %in% c("sinR", "ywcC"),
+    mutation_full = ifelse(clones %in% names(SPORE_FRACTION_MUTANTS),
+                           SPORE_FRACTION_MUTANTS[clones],
+                           gene_display(c(nomut = "none", sinR = "sinR",
+                                          ywcC = "ywcC",
+                                          spormut = "none")[t$mutation])),
+    # "carries a mutation", not "carries a biofilm-regulator mutation". On the
+    # eleven strains the analysis uses, the two are the same set, so this does
+    # not change model 3; it matters only when the spore isolates are included.
+    mutated = t$mutation %in% c("sinR", "ywcC") |
+              clones %in% names(SPORE_FRACTION_MUTANTS),
     stringsAsFactors = FALSE
   )
 }

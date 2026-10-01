@@ -340,10 +340,12 @@ distinguishes them from the other eight. Whoever picked them had a reason, and
 it is not recorded in any file recovered here. The list is in
 `output/clones_without_mutations.txt`.
 
-**The 17-generation result reproduces exactly.** For one mutant lineage to
-reach the observed 9.5% of a population of 1.33 × 10⁶ cells by division alone
-takes log2(0.095 × 1.33 × 10⁶) = 17 generations. That population size comes
-from the `populationDynamics` project's equilibrium total.
+**The generations figure is 22, not 17.** For one mutant lineage to reach the
+observed 9.5% of the population by division alone takes log2(0.095 × N)
+generations. N is a count of cells, not a density: the equilibrium total is
+1.33 × 10⁶ CFU/mL and the starvation cultures were 25 mL, so N = 3.32 × 10⁷ and
+the answer is 22. The earlier figure of 17 used the per-mL density, which would
+describe a 1 mL experiment.
 
 **Not used.** `113_All.variants.txt`, `changecolors.sh`, the ticks files and
 `SampleFiles/` in the Circos folder are inputs to the original Circos run,
