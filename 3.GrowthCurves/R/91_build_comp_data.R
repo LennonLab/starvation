@@ -24,7 +24,19 @@
 if (!length(.setup)) stop("Run this from the growthCurves project root (or R/).")
 source(.setup[1])
 
-FITS_DIR <- file.path(DATA_DIR, "gompertz_fits")
+# Which set of Gompertz fits to build the analysis from.
+#
+#   gompertz_fits_correcttime  elapsed time parsed properly as HH:MM:SS
+#   gompertz_fits              the archive, which read "0:14:10" as 0.14
+#
+# The corrected set is the default because it is the right one. Yield is
+# identical between them and umax differs by 0.3%; lag is displaced by a
+# constant 0.350 +/- 0.026 h, because the two clocks agree at every whole hour
+# (see the growth-curve supplement section). Set SPOREMUT_FITS=gompertz_fits to
+# reproduce the archived analysis, which is what the comp_data.csv check below
+# compares against.
+FITS_DIR <- file.path(DATA_DIR,
+                      Sys.getenv("SPOREMUT_FITS", "gompertz_fits_correcttime"))
 runs_tbl <- read.csv(file.path(DATA_DIR, "plate_runs.csv"), comment.char = "#")
 
 # One archived fit file, tagged with the run it came from.
@@ -101,7 +113,10 @@ check   <- all.equal(shipped, read.csv(file.path(OUT_DIR, "comp_data_rebuilt.csv
 if (isTRUE(check)) {
   message("comp_data.csv reproduces exactly from the archived Gompertz fits.")
 } else {
-  message("Rebuilt comp_data.csv differs from the archived file:")
+  if (basename(FITS_DIR) != "gompertz_fits") {
+    message("Rebuilt comp_data.csv differs from the archived file, as expected: ",
+            "these are the corrected-time fits (", basename(FITS_DIR), ").")
+  } else message("Rebuilt comp_data.csv differs from the archived file:")
   print(check)
 }
 

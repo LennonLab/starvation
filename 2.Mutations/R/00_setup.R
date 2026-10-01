@@ -52,6 +52,32 @@ EXCLUDE_POS <- 3529981L
 # track must be shifted by this. Enforced by check_circos_offset().
 CIRCOS_HALF_WINDOW <- 10000L
 
+## ---- the culture, and why the volume matters -------------------------------
+# The coalescent needs a count of cells, not a density, and that count is the
+# one number the neutral result turns on. Shoemaker et al. 2021 (PNAS), the
+# design this experiment follows, gives it: washed cells were dispensed into
+# 50 mL Falcon tubes containing 25 mL of buffered PBS, and dilutions were
+# plated on R2A. The 50 mL quoted in an earlier draft is the tube, and the
+# 20 mL sometimes quoted is the R2B growth volume before washing. Sampling
+# removed 0.2% of the volume each time, 12% over the experiment, so the figure
+# drifts to about 22 mL by day 1000 -- far inside the sweep in 03_null_model.R.
+CULTURE_VOL_ML <- 25
+
+# Equilibrium densities from the population dynamics analysis, in CFU/mL.
+DENS_SPORE          <- 9.9e5
+DENS_NONSPORE       <- 2.9e5
+EQUILIBRIUM_DENSITY <- 1.33e6
+
+# The same quantities as counts of cells in the culture.
+N_SPORE           <- DENS_SPORE          * CULTURE_VOL_ML
+N_NONSPORE        <- DENS_NONSPORE       * CULTURE_VOL_ML
+EQUILIBRIUM_TOTAL <- EQUILIBRIUM_DENSITY * CULTURE_VOL_ML
+
+# Simulation iterations. 100 in the draft was too few: the expected number of
+# shared mutations has a Monte Carlo SD of about 0.4 there, which is why two
+# runs at the same N disagreed (7.4 against 7.81). 2,000 gives an SE near 0.08.
+N_ITER <- 2000L
+
 ## ---- allele-frequency palette ----------------------------------------------
 # The published Circos track used a rainbow, which has no perceptual order --
 # a reader cannot tell from the colours alone which of two tiles is the more

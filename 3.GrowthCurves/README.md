@@ -132,18 +132,24 @@ The Gibbs sampler and `lme4` fit the same model by different routes and agree
 
 ## Things worth knowing
 
-**The data files say `ywcC`; the figures and tables say `slrC`.** *ywcC* is the
-legacy synonym for BSU_38220, whose current symbol is *slrC*. The mapping is
-`GENE_SYNONYMS` in `R/00_setup.R` and is display-only — `treatments_original_corrected.csv`
-and `comp_data.csv` are untouched, so the original name stays on record and the
-archive checks still pass. Cite as **slrC (ywcC)** at first mention, since the
-lab's records and the 2016-era literature use *ywcC*.
+**BSU_38220 is shown as `ywcC`, not `slrC`.** *slrC* is the current RefSeq
+symbol, but the lab's records, the 2016-era literature and the manuscript all
+use *ywcC*, so that is what the figures and tables display. The mapping lives in
+`R/00_setup.R` and is display-only — the data files are untouched, so the
+archive checks still pass.
 
-**Model 3 is model 2 here.** Every evolved isolate carries a mutation and the
-ancestor carries none, so the two groupings are the same partition. They would
-differ only with the unmutated spore isolates (S1, S6, S11, S22, S51, S95)
-included; those are in `comp_data_annotated.csv` and are out of scope for the
-growth-rate figures.
+**Model 3 is not model 2.** M23 and M26 carry no mutation, so on the eleven
+strains of the published set model 3 compares {ancestor, M23, M26} against the
+eight *sinR*/*ywcC* clones — a different partition. Among the ten evolved clones
+it does coincide with model 4, because the two clones without a mutation are the
+two from the spore fraction.
+
+**The six endpoint-spore isolates are now in the models.** S1, S6 and S95 carry
+a mutation and S11, S22 and S51 do not, all within the spore fraction, so they
+are the only strains that separate mutation status from sequenced fraction.
+Including them shows that yield tracks the fraction (1.24-fold, P = 0.003) and
+not the mutation (P = 0.245 within the spore fraction). See `SPORE_ISOLATES`
+and `SPORE_FRACTION_MUTANTS` in `R/00_setup.R`.
 
 **The ancestor is one strain.** Its six curves are technical replicates, so in
 model 2 the ancestor's group mean and that strain's own effect are the same
@@ -158,20 +164,21 @@ adds `run`, `well`, and a unique `curve_id` (`M21-20230824-1`). The odd name
 has two columns labelled `S95_4`, a plate-map typo most likely meant to be
 `S95_3`.
 
-**The sampler no longer needs JAGS.** The original ran the estimation model
-through `rjags`. Because the model is conjugate, `R/01_bayes_fitness.R` also
-carries an exact Gibbs sampler in ~15 lines of base R and defaults to it when
-JAGS is not installed. `R/03_validate.R` compares against the archived JAGS
-posterior: medians agree to 0.15%, the 95% interval bounds to 1.2%. To use
-JAGS instead, install it plus `rjags` and the `"auto"` engine picks it up.
+**The sampler is brms, and does not need JAGS.** `R/01_bayes_fitness.R`
+defaults to Stan via `brms`, so the whole analysis runs on standard, citable
+machinery. The conjugate Gibbs sampler the original used is still there as the
+`"gibbs"` engine, and `R/03_validate.R` checks the three against each other.
 
-**Refitting reproduces the archive.** `R/90_gompertz_fits.R` writes to
-`output/gompertz_refit/` rather than over `data/gompertz_fits/`, and compares
-the two: 27 of 32 fit files come back identical. The five that differ do so
-only on curves that were rejected during QC anyway (e.g. `M17_1`, a runaway fit
-at umax 0.47 vs 0.50). Refitting renumbers rows, which would invalidate the
-QC row positions recorded in `R/91_build_comp_data.R` — that is why the archive
-is what the analysis reads.
+**Elapsed time was parsed wrongly, and the analysis now uses corrected fits.**
+The plate reader exports `HH:MM:SS` and the original read it as a decimal, so
+`0:14:10` became 0.14 rather than 0.236 h. `R/90_gompertz_fits.R` refits against
+properly parsed time into `data/gompertz_fits_correcttime/`, which is what
+`R/91_build_comp_data.R` reads. The two clocks agree at every whole hour, so
+yield is unchanged and umax differs by 0.3%; lag is displaced by a constant
+0.350 ± 0.026 h, which moves the evolved-to-ancestor lag ratio from 0.64 to
+0.67 and leaves rankings and differences alone. The same 102 curves are selected
+either way. To reproduce the archived analysis instead, set
+`SPOREMUT_TIME_PARSE=archive` and `SPOREMUT_FITS=gompertz_fits`.
 
 **One inherited bug, fixed in the annotated file.** The original read
 `S1_new.fit.parms.txt` where it meant `S6_new`, so the six S6 rows in

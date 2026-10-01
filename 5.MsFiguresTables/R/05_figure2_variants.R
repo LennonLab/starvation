@@ -157,10 +157,20 @@ save_figure(pair(v2_umax, v2_bio), "figure2_v2_mean_sd", width = 13, height = 5.
 save_figure(pair(v3_umax, v3_bio), "figure2_v3_posterior_interval",
             width = 13, height = 5.4)
 
-# v3 was chosen. It is also written under the name the manuscript includes, so
-# main.tex's \includegraphics{figures/figure2_phenotypes.pdf} gets this figure
-# and not the superseded four-panel version from R/02_figure2.R.
-save_figure(pair(v3_umax, v3_bio), "figure2_phenotypes", width = 13, height = 5.4)
+# Whichever variant FIGURE2_VARIANT names is also written under the name the
+# manuscript includes, so main.tex's \includegraphics{figures/figure2_phenotypes.pdf}
+# gets it and not the superseded four-panel version from R/02_figure2.R. All
+# three are on disk either way, so switching is one word in R/00_setup.R.
+chosen <- switch(FIGURE2_VARIANT,
+  v1 = list(fig = pair(v1_umax, v1_bio + theme(legend.position = "none")), h = 5.2),
+  v2 = list(fig = pair(v2_umax, v2_bio), h = 5.4),
+  v3 = list(fig = pair(v3_umax, v3_bio), h = 5.4),
+  stop("FIGURE2_VARIANT must be \"v1\", \"v2\" or \"v3\", not \"",
+       FIGURE2_VARIANT, "\"", call. = FALSE))
+save_figure(chosen$fig, "figure2_phenotypes", width = 13, height = chosen$h)
+message(sprintf("Figure 2 in the manuscript is variant %s (%s).", FIGURE2_VARIANT,
+                c(v1 = "posterior ridges", v2 = "mean +/- SD",
+                  v3 = "posterior interval")[[FIGURE2_VARIANT]]))
 
 ## ---- yield and lag, for the supplement --------------------------------------
 

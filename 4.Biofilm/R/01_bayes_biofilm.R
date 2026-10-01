@@ -34,7 +34,8 @@
 #   engine = "gibbs" -- the exact conjugate Gibbs sampler for the model above,
 #                       written in base R, so the figures reproduce with no
 #                       external dependencies
-#   engine = "auto"  -- rjags if available, otherwise gibbs (default)
+#   engine = "auto"  -- rjags if available, otherwise gibbs. Not the default:
+#                      match.arg() takes the first value, which is "brms".
 ################################################################################
 
 ## Locate 00_setup.R whether you are in the project root or in R/.

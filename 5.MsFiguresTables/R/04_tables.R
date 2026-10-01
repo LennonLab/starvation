@@ -178,7 +178,18 @@ TABLES <- list(
        file = "table1_group_models.md", label = "tab:biofilmmodels",
        fullwidth = TRUE, fontsize = "small"),
   list(out = "tab6_biofilm_lineage_groups", project = "biofilm",
-       file = "table4_lineage_groups.md", label = "tab:biofilmlineage")
+       file = "table4_lineage_groups.md", label = "tab:biofilmlineage"),
+  # Both of these are \input at the very end of the supplement, after the
+  # inline Table S9, so adding them does not renumber anything above.
+  list(out = "tab7_sigmoid_parameters", project = "pop",
+       file = "table1_sigmoidal_parms.md", label = "tab:sigmoidparms",
+       fullwidth = TRUE, fontsize = "small"),
+  list(out = "tab8_all_mutations", project = "mut",
+       file = "tableS1_all_mutations.md", label = "tab:allmuts",
+       fullwidth = TRUE, fontsize = "footnotesize", italic_col = "Gene"),
+  list(out = "tab9_latent_diagnostics", project = "pop",
+       file = "table_latent_diagnostics.md", label = "tab:latentdiag",
+       fullwidth = TRUE, fontsize = "small")
 )
 
 built <- 0L

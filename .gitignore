@@ -61,3 +61,15 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# ---- regenerable working directories ----------------------------------------
+
+# Diagnostic refits produced by 3.GrowthCurves/R/90_gompertz_fits.R when it is
+# run in archive mode. The corrected-time fits it writes by default live in
+# data/gompertz_fits_correcttime/ and ARE tracked: they are an analysis input.
+3.GrowthCurves/output/gompertz_refit/
+
+# JAGS scratch for 1.PopDynamics/R/91_latent_state_diagnostics.R -- model, data
+# and ~30 MB of CODA chains, all rebuilt by that script in a couple of minutes.
+# The diagnostics it distils (latent_state_diagnostics.csv) are tracked.
+1.PopDynamics/output/latent_states_cli/

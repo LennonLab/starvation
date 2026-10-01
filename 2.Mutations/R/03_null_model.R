@@ -34,12 +34,7 @@ set.seed(20260730)
 MU          <- 3.28e-10          # per bp per generation (Sung et al. 2015)
 U           <- MU * GENOME_BP    # per genome per generation
 GENS_GROWTH <- 29L               # log2(10^9 cells) from a single ancestor
-N_ITER      <- 100L              # iterations, as in the draft
-
-# Equilibrium population sizes, from the population dynamics analysis: spores
-# settle near 10^6 CFU/mL and non-spores near 3 x 10^5.
-N_SPORE     <- 9.9e5
-N_NONSPORE  <- 2.9e5
+# Culture volume, densities, cell counts and N_ITER come from 00_setup.R.
 
 SIM <- list(
   S10        = list(n = FRACTIONS$S10$n,        N = N_SPORE,    G = 0L),
@@ -223,7 +218,9 @@ print(tests %>%
 # CFU/mL, but the number that matters is cells in the whole culture, not per
 # mL. This sweep shows where the conclusion changes.
 
-sweep_N <- c(2.9e5, 1.33e6, 1e7, 1e8, 1e9)
+# Effective sizes at and below the census count. Sizes above it are not swept:
+# the volume is known, so a larger N would describe a culture that does not exist.
+sweep_N <- sort(unique(c(2.9e5, 4e5, 5e5, 1e6, 1.33e6, N_NONSPORE)))
 f <- SIM[["S+NS1000"]]
 
 sweep <- bind_rows(lapply(sweep_N, function(N) {
@@ -242,7 +239,8 @@ sweep <- bind_rows(lapply(sweep_N, function(N) {
 
 # N is a count of cells, not a density. The densities are known; what is
 # missing is one number, the culture volume. This is the conversion.
-sweep$implied_volume_mL <- sweep$N / N_NONSPORE
+sweep$implied_volume_mL <- sweep$N / DENS_NONSPORE
+sweep$frac_of_census    <- sweep$N / N_NONSPORE
 
 write.csv(sweep, file.path(OUT_DIR, "null_population_size_sweep.csv"),
           row.names = FALSE)
@@ -250,11 +248,11 @@ write.csv(sweep, file.path(OUT_DIR, "null_population_size_sweep.csv"),
 cat("\nSensitivity to the non-spore population size (S+NS1000, G = 1000)\n")
 cat("Observed: 34 mutations, 10 carried by more than one clone.\n")
 cat(sprintf(paste0(
-  "N is a count of cells, not a density. At %.1e non-spores per mL, the\n",
-  "implied culture volume is shown alongside; the experiment's volume settles\n",
-  "this outright. Anything from about 25 mL up puts N past 10^7, which is the\n",
-  "regime where the observed sharing is improbable under neutrality.\n\n"),
-  N_NONSPORE))
+  "N is a count of cells, not a density. The culture was %d mL at %.1e\n",
+  "non-spores per mL, so N = %.2e; the row at that N is the experiment. The\n",
+  "sweep is kept to show how far the conclusion travels: it needs a volume\n",
+  "below about 5 mL before drift alone can produce the observed sharing.\n\n"),
+  CULTURE_VOL_ML, DENS_NONSPORE, N_NONSPORE))
 print(sweep %>%
         mutate(N = sprintf("%.1e", N),
                implied_volume_mL = sprintf("%.1f", implied_volume_mL),
@@ -268,7 +266,6 @@ print(sweep %>%
 # For one mutant lineage to reach a frequency f by division alone, while the
 # rest of the population does not divide, needs log2(f * N) generations.
 
-EQUILIBRIUM_TOTAL <- 1.33e6      # CFU/mL, from the population dynamics analysis
 top <- muts %>% filter(fraction == "S+NS1000") %>% slice_max(carriers, n = 1)
 gens_needed <- log2(top$frequency[1] * EQUILIBRIUM_TOTAL)
 
