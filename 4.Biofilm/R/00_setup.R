@@ -66,11 +66,32 @@ N_REPS <- 8L   # replicate wells per strain (A-H on the single plate)
 # or upstream of slrR" -- so it means the intergenic epsA-slrR variant at
 # 3,529,981, the marker that splits the sequenced clones into two clades.
 # R/06_lineage_groups.R runs that comparison.
+# M23 and M26 are clones 23 and 26 of the endpoint TOTAL-fraction matrix, and
+# carry no mutation there. They were labelled "spore" because they had no
+# mutation -- inferring cell type from mutation status, which then makes any
+# test of mutation against cell type circular. Megan Behringer confirmed (Oct
+# 2026) they came from the mixed fraction. Their fraction is what is known, so
+# they are labelled Total. The S isolates are genuinely spore-fraction: their
+# mutations (yetA, ylmG, kdgA, levB-aspP) are the endpoint-spore calls and
+# appear nowhere in the total-fraction matrix.
+TOTAL_FRACTION_NO_MUTATION <- c("M23", "M26")
+
+# The comparison group {M4, M13, M79} is a LINEAGE group, not a gene group.
+# M4 and M13 carry ywcC frameshifts; M79 carries none -- its acquired mutations
+# are yutK and cotI, on the epsA-slrR standing variant. The original metadata
+# called the group "ywcC.slrR" (growth) and "ywcC/slrR" (biofilm), meaning
+# "ywcC or the slrR variant"; the code had shortened that to "ywcC", which made
+# M79 look like a ywcC mutant. Group comparisons use the lineage name, and the
+# per-strain tables give each clone its own genes (column `genes`).
+LINEAGE_YWCC <- "ywcC/epsA-slrR"
+LINEAGE_ONLY_GENES <- c(M79 = "yutK, cotI")
+
+
 # biofil.csv puts "spore" in the mutation column for m23 and m26. That is the
 # fraction they came from, not a mutation: sequencing finds none in clones 23
 # or 26. They are labelled "none" for the models, and the ancestor likewise.
 MUTATION_LABEL <- c(ancestor = "none", sinR = "sinR",
-                    `ywcC/slrR` = "ywcC", spore = "none")
+                    `ywcC/slrR` = LINEAGE_YWCC, spore = "none")
 
 #' Grouping variables for a set of strains, in the order given.
 #'
@@ -98,31 +119,30 @@ strain_meta <- function(clones) {
     # condition belongs in the Methods, not on a bracket. The data file is
     # left alone.
     cell     = ifelse(d$Treatment == "Ancestor", NA,
-                      ifelse(d$Treatment == "Vegetative", "Total", d$Treatment)),
-    mutation = c(ancestor = NA, sinR = "sinR", `ywcC/slrR` = "ywcC",
+                      ifelse(toupper(d$clones) %in% TOTAL_FRACTION_NO_MUTATION, "Total",
+                             ifelse(d$Treatment == "Vegetative", "Total", d$Treatment))),
+    mutation = c(ancestor = NA, sinR = "sinR", `ywcC/slrR` = LINEAGE_YWCC,
                  spore = NA)[d$mutation],
     # full mutation factor, used by the models rather than the figures
     mutation_full = MUTATION_LABEL[d$mutation],
     # TRUE for the eight sinR / ywcC clones; defines model 3
     mutated = d$mutation %in% c("sinR", "ywcC/slrR"),
     stringsAsFactors = FALSE
-  )
+  ) -> m
+  m$genes <- ifelse(toupper(m$clone) %in% names(LINEAGE_ONLY_GENES),
+                    LINEAGE_ONLY_GENES[toupper(m$clone)],
+                    ifelse(m$mutation_full == LINEAGE_YWCC, "ywcC", m$mutation_full))
+  m
 }
 
 ## ---- the ancestor is under question ---------------------------------------
 # The plate note in OneDrive.../Biofilm/Behringer_Plate1.xlsx calls column 11
 # "B. subtilis 168 delta 6", where data/biofil.csv calls it "Ancestor". Delta 6
-# is a domesticated 168 derivative, not the strain the starvation experiment
-# began from -- the assay appears to have been run against the wrong ancestor,
-# and a wild-type-only biofilm plate was read in June 2023 to replace it
-# (OneDrive.../20230611/20230611_SporeMut_Biofilm.xlsx, experiment file
-# SporeMutWT_Biofilm_230615).
-#
-# That 2023 reading is a separate run on a different protocol -- 540/600 nm
-# against 550, and a lid comparison -- so it is not spliced in here. Until it
-# is, everything expressed *relative to the ancestor* is provisional. What does
-# not depend on it: the absolute posteriors, the lineage-group comparison in
-# R/06_lineage_groups.R, and the models fit to evolved clones only.
+# is a domesticated, biofilm-impaired 168 derivative, not the strain the
+# starvation experiment began from, so everything expressed *relative to the
+# ancestor* is provisional. What does not depend on it: the absolute posteriors,
+# the lineage-group comparison in R/06_lineage_groups.R, and every model fit to
+# the evolved clones alone.
 ANCESTOR_IS_PROVISIONAL <- TRUE
 
 warn_ancestor <- function() {
@@ -191,7 +211,7 @@ label_runs <- function(x) {
 #' @param italic labels to set in italic (gene names)
 nested_brackets <- function(rows, axis = c("x", "y"), start, step, gap,
                             size = 4.2, colour = "grey30",
-                            italic = c("sinR", "ywcC", "slrC")) {
+                            italic = c("sinR", "ywcC", "slrC", LINEAGE_YWCC)) {
   axis   <- match.arg(axis)
   layers <- list()
 

@@ -27,72 +27,70 @@ It disagrees with `data/biofil.csv` in three places:
 | 1 | 11 | **B. subtilis 168 delta 6** | Ancestor |
 | 2 | 9 | **S52** | S51 |
 
-**M66 vs M79 is the one that matters.** That column holds the highest readings
-on the plate (1.24–1.94), and under the `biofil.csv` labelling it is *m79* —
-one of the three clones in the *slrC*/*epsA–slrR* group whose elevated biofilm
-drives the group difference. `M66` appears **exactly once in the whole 470-file
-folder**: in that note. `M79` appears throughout — in `treatments.csv`,
-`comp_data.csv`, the growth-curve plates and the mutation matrices. On that
-evidence the note is almost certainly a slip, and `biofil.csv` is right. But it
-is the only independent record of the layout, so it should be confirmed rather
-than assumed.
+**Resolved (Oct 2026): `biofil.csv` is right on columns 10 and 9, and the note is
+right on column 11.** The Behringer workbooks are the original plate-reader grids
+(550 nm, single-precision values) with Megan Behringer's notes underneath, and
+`biofil.csv` was transcribed from them. Two independent records settle the
+disagreements:
 
-The same pattern covers **S52 vs S51**: `S51` appears 42 times in the project,
-`S52` only in that note.
+- **The 2023 growth-curve tubes**, made from the clones Megan sent and labelled
+  with her tube names, are exactly M4, M13, M17, M19, M21, M23, M26, M41, M54,
+  M79, S1, S6, S11, S22, S51, S95 and the ancestor. M66 and S52 appear in none
+  of the six raw files.
+- **Her own plate layout** (sheet 4 of `2.Mutations/data/LT_Heat_Bacillus.compare.tab.xlsx`)
+  uses M79 and S51 and never M66 or S52.
 
-### 168 Δ6 vs "Ancestor" — the assay used the wrong ancestor
+Both plates also run in ascending clone order, and in that order the clone after
+M54 is M79 and the clone between S22 and S95 is S51. So "M66" and "S52" are slips
+in the notes, and column 10 — the highest readings on the plate — is **M79**.
 
-This one is not a slip. Δ6 is a specific domesticated 168 derivative, and the
-recollection from the lab is that the original plate was run against the wrong
-ancestor and the ancestor alone was re-read later. The 2023 file fits exactly:
-its experiment is named **`SporeMutWT_Biofilm_230615`** — wild type only, no
-strain panel, a lid comparison to settle the protocol.
+Column 11 is different. "B. subtilis 168 delta 6" is a deliberate strain
+description, not a slip, and nothing contradicts it; "Ancestor" was a label added
+in transcription. That well is 168 Δ6, and no comparison with the ancestor is
+made from it.
 
-**So everything expressed relative to the ancestor is provisional**, because
-the denominator is probably the wrong strain. That is the relative ridge
-figure, the `Relative biofilm` column of Table 3, and model 2
-(ancestor vs. evolved). The scaling is a single divisor: if the true ancestor
-sits a factor *k* away, every relative value moves by 1/*k*.
+M93 and M94 appear in Megan's layout but not in the tubes she sent, so they were
+removed before phenotyping here.
+
+**`Biofilm_06_16_20.txt` is a faithful transcription.** All 192 wells match the
+two Behringer grids exactly after rounding to three decimals; only the three
+labels above differ.
+
+**One well on plate 2 is excluded.** Row G reads 0.078 for S22 and 0.305 for its
+neighbouring blank, against 0.215–0.376 for every other S22 well and
+0.059–0.087 for every other plate-2 blank. The two look swapped at pipetting,
+and since it is in the original grid it is not a transcription error.
+Blank-corrected, the S22 well is 0.001, which on a log scale drags S22 far below
+its other seven wells. With it, the within-plate-2 mutation contrast is 0.76
+(0.30–1.91), P = 0.45; without it, 1.06 (0.72–1.54), P = 0.71. Same
+conclusion, much less noise. See `SWAPPED_WELLS` in `R/06_lineage_groups.R`.
+
+**M79 is not a *ywcC* mutant.** Its acquired mutations are *yutK* and *cotI*, on
+the *epsA–slrR* variant. The group {M4, M13, M79} is compared as a lineage —
+which is what the original `ywcC/slrR` label in `biofil.csv` meant — and is
+named `ywcC/epsA-slrR` throughout. The per-strain table gives each clone its own
+genes.
+
+### 168 Δ6 vs "Ancestor"
+
+This one is not a slip. Δ6 is a specific domesticated, biofilm-impaired 168
+derivative, so the plate's reference well is not this experiment's ancestor.
+
+**So everything expressed relative to that well is provisional**, because the
+denominator is the wrong strain: the relative ridge figure, the
+`Relative biofilm` column of Table 3, and model 2 (ancestor vs. evolved). The
+manuscript makes no biofilm comparison with the ancestor for this reason.
 
 **What does not depend on it**, and can be used as it stands:
 
 - the absolute posteriors and `fig_biofilm_absolute_dist.pdf`
 - the lineage-group comparison, Table 4 and `fig_biofilm_lineage_groups.pdf` —
-  *sinR* vs *slrC*/*epsA–slrR* vs spore never touches the ancestor
-- models 4 and 5, which are fit to evolved clones only
+  *sinR* vs *ywcC*/*epsA–slrR* vs no mutation never touches the reference well
+- every model fit to the evolved clones alone (the total-fraction and
+  *sinR* or *ywcC*/*epsA–slrR* scopes)
 
-`R/00_setup.R` prints this at every run and `ANCESTOR_IS_PROVISIONAL` there is
-the flag to clear once the replacement is merged.
-
-**Why the 2023 ancestor is not spliced in.** It is a separate run on a
-different protocol — 540/600 nm against 550 nm, and with a lid — with no shared
-reference well to calibrate between the two. Dividing 2020 clone readings by a
-2023 ancestor reading would put a run-to-run difference straight into every
-relative value. Merging it properly needs either a strain measured on both
-plates or an ancestor re-read under the 2020 protocol.
-
-## Why the 2023 file does not supersede this one
-
-`OneDrive_3_7-15-2026/20230611/20230611_SporeMut_Biofilm.xlsx` is newer than
-the 2020 reading, has no plate map, and looks at first like the assay this
-project should be built on. It is not the same experiment. Four independent
-signs, and no plate map exists to find:
-
-- The Synergy export records its own experiment file as
-  **`SporeMutWT_Biofilm_230615_105535.xpt`** — WT is in the name.
-- Its two sheets are **`withLid` and `withoutLid`**: a methods comparison, not
-  a strain comparison.
-- The growth-curve file sitting beside it, from the same day, has a sheet named
-  **"final-all samples are WT"**.
-- The readings are far too uniform for a strain panel. Across 88 wells the 2023
-  plate spans 0.083–0.503 (CV 52%); the 2020 strain plate spans 0.066–1.944
-  (CV 134%), because it contains both m79 at 1.9 and m17 at 0.07. A 6-fold
-  spread is ordinary well-to-well variation for one strain; a 30-fold spread is
-  a panel.
-
-So it is a wild-type lid test, and `data/biofil.csv` remains the biofilm
-dataset. If a 2023 strain-panel reading exists it is somewhere else, and would
-still need its layout.
+`R/00_setup.R` prints this at every run. `ANCESTOR_IS_PROVISIONAL` there is the
+flag to clear if the true ancestor is ever read on the same plate as the clones.
 
 ## Biofilm by lineage group
 

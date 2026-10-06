@@ -95,7 +95,7 @@ name. `output/supplementary_index.md` lists them with a sentence each.
 | S1 | allele-frequency spectra against the neutral expectation | `2.Mutations/R/04_figures.R` |
 | S2 | clone genotypes and the lineage structure | `2.Mutations/R/06_lineage_structure.R` |
 | S3 | biofilm by lineage group | `4.Biofilm/R/06_lineage_groups.R` |
-| S4 | the 2023 wild-type biofilm re-read (diagnostic) | `4.Biofilm/R/07_ancestor_2023.R` |
+| S4 | maximum yield and lag time | `R/05_figure2_variants.R` (built with Figure 2) |
 
 To add one, append an entry to `SUPPLEMENTARY` in `R/03_supplementary.R` giving
 the project, the script, and the name that script gives its finished plot. A

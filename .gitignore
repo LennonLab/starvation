@@ -73,3 +73,8 @@ rsconnect/
 # and ~30 MB of CODA chains, all rebuilt by that script in a couple of minutes.
 # The diagnostics it distils (latent_state_diagnostics.csv) are tracked.
 1.PopDynamics/output/latent_states_cli/
+
+# ---- internal: trials, dead ends and diagnostics --------------------------------
+# Kept for the record, never pushed. Anything here was tried and set aside; none
+# of it feeds the analysis or the manuscript. See _internal/README.md.
+_internal/

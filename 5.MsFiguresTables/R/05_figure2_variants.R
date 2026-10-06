@@ -43,18 +43,34 @@ ancestor_ref <- function(draws) mean(draws[, "ancestor"])
 
 ## ---- v1: posterior ridges ---------------------------------------------------
 
+# Manuscript form of the ridges, made to say exactly what v3 says:
+#   * scale 0.9, so each density stays inside its own row. At scale 2 a ridge
+#     rose two rows above its baseline and the brackets, which are placed at the
+#     baselines, looked shifted onto the wrong clones.
+#   * a reference line in A only. B has none, for the same reason v3 has none:
+#     the biofilm reference well is B. subtilis 168 delta 6, not the ancestor.
+#   * no tail-probability legend; the shading is explained in the caption.
+#   * brackets on A; B shares A's row order (both ancestor, M4, M13, M79,
+#     M17-M54, M23, M26), so they read straight across.
+RIDGE_SCALE <- 0.9
+
 v1_umax <- g$ridge_plot(
   g$post$umax$absolute[, g$ABS_ORDER], g$ABS_ORDER, g$PANELS$umax$absolute_lab,
   xlim = abs_xlim_for(g$post$umax$quantiles$absolute, g$ABS_ORDER),
-  scale = 2, ref = ancestor_ref(g$post$umax$absolute), rows = g$rows_abs)
+  scale = RIDGE_SCALE, ref = ancestor_ref(g$post$umax$absolute), rows = g$rows_abs) +
+  theme(legend.position = "none")
 
 v1_bio <- b$ridge_plot(
   log10(b$post$absolute[, b$ABS_ORDER]), b$ABS_ORDER,
   xlab = expression(Biofilm ~ (OD[550])),
   xlim = abs_xlim_for(log10(b$post$quantiles$absolute), b$ABS_ORDER),
-  scale = 2, ref = ancestor_ref(log10(b$post$absolute)),
-  rows = NULL, labels_fn = b$od_labels)
+  scale = RIDGE_SCALE, ref = NA,
+  rows = NULL, labels_fn = b$od_labels) +
+  theme(legend.position = "none")
 
+# The biofilm reference well (B. subtilis 168 delta 6, not the ancestor) stays
+# in panel B's bottom row for now. Whether to keep it or drop it is with the
+# coauthors; the caption says what it is.
 ## ---- v2: mean +/- SD over replicates, clones on x ---------------------------
 
 v2_umax <- g$mean_sd_plot(g$fits$umax, g$fits$clones, g$PANELS$umax$strip_lab)
@@ -151,8 +167,7 @@ pair <- function(p1, p2, collect = FALSE) {
   fig
 }
 
-save_figure(pair(v1_umax, v1_bio + theme(legend.position = "none")),
-            "figure2_v1_posterior_ridges", width = 13, height = 5.2)
+save_figure(pair(v1_umax, v1_bio), "figure2_v1_posterior_ridges", width = 13, height = 5.6)
 save_figure(pair(v2_umax, v2_bio), "figure2_v2_mean_sd", width = 13, height = 5.4)
 save_figure(pair(v3_umax, v3_bio), "figure2_v3_posterior_interval",
             width = 13, height = 5.4)
@@ -162,7 +177,7 @@ save_figure(pair(v3_umax, v3_bio), "figure2_v3_posterior_interval",
 # gets it and not the superseded four-panel version from R/02_figure2.R. All
 # three are on disk either way, so switching is one word in R/00_setup.R.
 chosen <- switch(FIGURE2_VARIANT,
-  v1 = list(fig = pair(v1_umax, v1_bio + theme(legend.position = "none")), h = 5.2),
+  v1 = list(fig = pair(v1_umax, v1_bio), h = 5.6),
   v2 = list(fig = pair(v2_umax, v2_bio), h = 5.4),
   v3 = list(fig = pair(v3_umax, v3_bio), h = 5.4),
   stop("FIGURE2_VARIANT must be \"v1\", \"v2\" or \"v3\", not \"",

@@ -67,12 +67,13 @@ Re-running a project overwrites its `output/`. Large posterior draws
 
 **Figure 2 has three versions** and all three are written on every run:
 posterior ridges (`v1`), mean ± SD per clone (`v2`), and posterior median with
-a 95% credible interval (`v3`). `v3` goes to the manuscript by default because
-a reader who has not met posterior densities can still read it. To switch,
-change one word in `5.MsFiguresTables/R/00_setup.R`:
+a 95% credible interval (`v3`). The manuscript uses the ridges, `v1`, which the
+coauthors preferred; `v3` is the alternative for a reader who has not met
+posterior densities. To switch, change one word in
+`5.MsFiguresTables/R/00_setup.R`:
 
 ```r
-FIGURE2_VARIANT <- "v1"   # "v1" ridges | "v2" mean +/- SD | "v3" interval
+FIGURE2_VARIANT <- "v3"   # "v1" ridges | "v2" mean +/- SD | "v3" interval
 ```
 
 and re-run `5.MsFiguresTables/R/05_figure2_variants.R`. Whichever is named is

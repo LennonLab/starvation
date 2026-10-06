@@ -58,11 +58,18 @@ ridge_plot <- function(draws, order, xlab, xlim, scale = 2, ref = 0,
   labels <- if (show_clones) short_label(order) else rep("", length(order))
 
   # Bracket geometry, in fractions of the x span, measured leftwards.
-  b_start <- 0.05
+  # 0.09, not 0.05: ggplot pads the x axis by 5% of the span, so at 0.05 the
+  # innermost bracket sat exactly on the panel border and its vertical line
+  # disappeared into the frame, leaving only the end ticks visible.
+  b_start <- 0.09
   b_step  <- 0.105
   b_gap   <- 0.05
 
-  p <- ggplot(d, aes(x = value, y = as.numeric(clone), group = clone,
+  # Each ridge rises `scale` rows above its baseline, while the brackets are
+  # centred on the row. Dropping the baseline by scale/2 centres the density
+  # on its row, so a clone's ridge sits inside its own bracket rather than
+  # level with the edge of the next one.
+  p <- ggplot(d, aes(x = value, y = as.numeric(clone) - scale / 2, group = clone,
                      fill = 0.5 - abs(0.5 - after_stat(ecdf))))
 
   if (!is.na(ref)) {

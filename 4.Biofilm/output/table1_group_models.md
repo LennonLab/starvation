@@ -7,9 +7,9 @@ Linear mixed models of log blank-corrected OD550, one per grouping, with strain 
 | all (11) | 1 | global mean | 1 | 0.60 | – |
 | all (11) | 2 | ancestor vs evolved | 2 | 0.20 | 0.928 |
 | all (11) | 3 | mutation vs none | 2 | 0.20 | 0.829 |
-| evolved (10) | 1 | global mean | 1 | 0.05 | – |
-| evolved (10) | 4 | spore vs total | 2 | 0.02 | 0.773 |
-| evolved (10) | 5a | sinR vs ywcC vs none | 3 | 0.93 | 0.028 |
-| sinR/ywcC (8) | 1 | global mean | 1 | 0.01 | – |
-| sinR/ywcC (8) | 5 | sinR vs ywcC | 2 | 0.99 | 0.004 |
+| total fraction (10) | 1 | global mean | 1 | 0.05 | – |
+| total fraction (10) | 3 | mutation vs none | 2 | 0.02 | 0.773 |
+| total fraction (10) | 5a | sinR vs ywcC/epsA-slrR vs none | 3 | 0.93 | 0.028 |
+| sinR or ywcC/epsA-slrR (8) | 1 | global mean | 1 | 0.01 | – |
+| sinR or ywcC/epsA-slrR (8) | 5 | sinR vs ywcC/epsA-slrR | 2 | 0.99 | 0.004 |
 

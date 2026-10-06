@@ -84,22 +84,24 @@ SCOPES <- list(
       list(id = "3", label = "mutation vs none",      grouping = "has_mutation")
     )
   ),
+  # All ten plate-1 clones are from the total fraction: m23 and m26 were
+  # labelled spore only because they carry no mutation. So there is no
+  # cell-type contrast on this plate, and model 3 is a clean mutation contrast.
   list(
-    id = "evolved (10)",
+    id = "total fraction (10)",
     strains = setdiff(MODEL_ORDER, "ancestor"),
-    # model 3 is the same partition as model 4 here and is not repeated
     models = list(
       list(id = "1",  label = "global mean",          grouping = NULL),
-      list(id = "4",  label = "spore vs total",       grouping = "cell"),
-      list(id = "5a", label = "sinR vs ywcC vs none", grouping = "mutation_full")
+      list(id = "3",  label = "mutation vs none",     grouping = "has_mutation"),
+      list(id = "5a", label = "sinR vs ywcC/epsA-slrR vs none", grouping = "mutation_full")
     )
   ),
   list(
-    id = "sinR/ywcC (8)",
-    strains = meta$clone[meta$mutation_full %in% c("sinR", "ywcC")],
+    id = "sinR or ywcC/epsA-slrR (8)",
+    strains = meta$clone[meta$mutation_full %in% c("sinR", LINEAGE_YWCC)],
     models = list(
       list(id = "1", label = "global mean",           grouping = NULL),
-      list(id = "5", label = "sinR vs ywcC",          grouping = "mutation_full")
+      list(id = "5", label = "sinR vs ywcC/epsA-slrR",          grouping = "mutation_full")
     )
   )
 )

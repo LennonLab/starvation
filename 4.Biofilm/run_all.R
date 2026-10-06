@@ -11,7 +11,6 @@ for (script in c("R/01_bayes_biofilm.R",   # assay -> posterior draws
                  "R/03_validate.R",        # check against the exact posterior
                  "R/04_group_models.R",    # do the strain groupings explain it?
                  "R/06_lineage_groups.R",  # the early draft's three-group comparison
-                 "R/07_ancestor_2023.R",   # diagnostic: the 2023 wild-type re-read
                  "R/05_report.R")) {       # manuscript tables and methods text
   message("\n===== ", script, " =====")
   source(script, echo = FALSE)

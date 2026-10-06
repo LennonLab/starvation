@@ -95,14 +95,39 @@ STRIP_ORDER <- c("ancestor", "M23", "M26", "M17", "M19",
 # evo.type "anc". The per-replicate file treatments.csv disagrees: S1 and S6
 # carry "yetA.ymlG" and S95 "levB_yveA", with S11, S22 and S51 carrying none.
 #
-# treatments.csv is the one to believe. Those names are three of the four
-# mutations that survive for the endpoint spore fraction -- yetA (777,008),
-# ylmG (1,611,379) and levB-aspP (3,539,121) -- and all four are singletons,
-# so the paired label spans S1 and S6 rather than giving each clone both. The
-# fourth, kdgA, belongs to a clone that was never phenotyped.
+# The 96-clone endpoint-spore variant matrix (Megan Behringer, Oct 2026;
+# 2.Mutations/data/LT_Heat_Bacillus.compare.tab.xlsx) settles which isolate
+# carries what. Four mutations survive QC, in three clones:
+#   clone 1  (S1)   yetA 777,008 and ylmG 1,611,379
+#   clone 6  (S6)   kdgA 2,323,251
+#   clone 95 (S95)  levB-aspP 3,539,121
+# treatments.csv records S6 as "yetA.ymlG", copied from S1; the matrix says
+# kdgA. All three mutant clones in that fraction were phenotyped.
 #
 # Corrected here rather than in the CSV, as everywhere else in this project.
-SPORE_FRACTION_MUTANTS <- c(S1 = "yetA", S6 = "ylmG", S95 = "levB-aspP")
+SPORE_FRACTION_MUTANTS <- c(S1 = "yetA, ylmG", S6 = "kdgA", S95 = "levB-aspP")
+
+# M23 and M26 are clones 23 and 26 of the endpoint TOTAL-fraction matrix, and
+# carry no mutation there. They were labelled "spore" because they had no
+# mutation -- inferring cell type from mutation status, which then makes any
+# test of mutation against cell type circular. Megan Behringer confirmed (Oct
+# 2026) they came from the mixed fraction. Their fraction is what is known, so
+# they are labelled Total. The S isolates are genuinely spore-fraction: their
+# mutations (yetA, ylmG, kdgA, levB-aspP) are the endpoint-spore calls and
+# appear nowhere in the total-fraction matrix.
+TOTAL_FRACTION_NO_MUTATION <- c("M23", "M26")
+
+# The comparison group {M4, M13, M79} is a LINEAGE group, not a gene group.
+# M4 and M13 carry ywcC frameshifts; M79 carries none -- its acquired mutations
+# are yutK and cotI, on the epsA-slrR standing variant. The original metadata
+# called the group "ywcC.slrR" (growth) and "ywcC/slrR" (biofilm), meaning
+# "ywcC or the slrR variant"; the code had shortened that to "ywcC", which made
+# M79 look like a ywcC mutant. Group comparisons use the lineage name, and the
+# per-strain tables give each clone its own genes (column `genes`).
+LINEAGE_YWCC <- "ywcC/epsA-slrR"
+LINEAGE_ONLY_GENES <- c(M79 = "yutK, cotI")
+
+
 
 strain_meta <- function(clones) {
   t <- read.csv(file.path(DATA_DIR, "treatments_original_corrected.csv"),
@@ -116,19 +141,20 @@ strain_meta <- function(clones) {
     label    = tolower(clones),
     origin   = ifelse(t$evo.type == "ancestor", "Ancestor", "Evolved"),
     cell     = ifelse(t$evo.type == "ancestor", NA,
-                      ifelse(t$cell.type == "spore", "Spore", "Total")),
+                      ifelse(clones %in% TOTAL_FRACTION_NO_MUTATION, "Total",
+                             ifelse(t$cell.type == "spore", "Spore", "Total"))),
     # M23 and M26 carry no mutation, so no label; the cell-type row already
     # marks them as Spore.
     mutation = ifelse(clones %in% names(SPORE_FRACTION_MUTANTS),
                       SPORE_FRACTION_MUTANTS[clones],
-                      gene_display(c(nomut = NA, sinR = "sinR", ywcC = "ywcC",
+                      gene_display(c(nomut = NA, sinR = "sinR", ywcC = LINEAGE_YWCC,
                                      spormut = NA)[t$mutation])),
     # Full mutation factor, used by the models. "spormut" is the data file's
     # label for M23/M26 and is shown as "none", which is what they carry.
     mutation_full = ifelse(clones %in% names(SPORE_FRACTION_MUTANTS),
                            SPORE_FRACTION_MUTANTS[clones],
                            gene_display(c(nomut = "none", sinR = "sinR",
-                                          ywcC = "ywcC",
+                                          ywcC = LINEAGE_YWCC,
                                           spormut = "none")[t$mutation])),
     # "carries a mutation", not "carries a biofilm-regulator mutation". On the
     # eleven strains the analysis uses, the two are the same set, so this does
@@ -136,7 +162,11 @@ strain_meta <- function(clones) {
     mutated = t$mutation %in% c("sinR", "ywcC") |
               clones %in% names(SPORE_FRACTION_MUTANTS),
     stringsAsFactors = FALSE
-  )
+  ) -> m
+  # each clone's own acquired mutations, for per-strain tables
+  m$genes <- ifelse(m$clone %in% names(LINEAGE_ONLY_GENES), LINEAGE_ONLY_GENES[m$clone],
+                    ifelse(m$mutation_full == LINEAGE_YWCC, "ywcC", m$mutation_full))
+  m
 }
 
 ## ---- plotting theme (Lennon lab house style) -------------------------------
@@ -196,7 +226,7 @@ label_runs <- function(x) {
 #' @param italic labels to set in italic (gene names)
 nested_brackets <- function(rows, axis = c("x", "y"), start, step, gap,
                             size = 4.2, colour = "grey30",
-                            italic = c("sinR", "ywcC", "slrC")) {
+                            italic = c("sinR", "ywcC", "slrC", LINEAGE_YWCC)) {
   axis   <- match.arg(axis)
   layers <- list()
 

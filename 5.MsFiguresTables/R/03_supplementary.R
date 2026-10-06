@@ -50,20 +50,9 @@ SUPPLEMENTARY <- list(
        title   = "Biofilm by lineage group",
        note    = paste(
          "The three-group comparison: sinR against ywcC/epsA-slrR against",
-         "spore. This never uses the ancestor, so it is unaffected by the",
-         "ancestor problem described for Figure 2.")),
+         "no mutation. This never uses the ancestor, so it is unaffected by the",
+         "ancestor problem described for Figure 2."))
 
-  list(id      = "S4",
-       stem    = "figureS4_ancestor_2023_diagnostic",
-       project = "biofilm", script = "07_ancestor_2023.R", object = "p",
-       width   = 7.6, height = 6,
-       title   = "Diagnostic: the 2023 wild-type biofilm re-read",
-       note    = paste(
-         "Where the 2023 wild-type reading falls against the 2020 plate. The",
-         "two runs read different wavelengths against different blanks and",
-         "share no strain, so this is not a calibration and nothing in the",
-         "analysis depends on it. Include only if the ancestor question is",
-         "discussed."))
 )
 
 ## ---- build ------------------------------------------------------------------

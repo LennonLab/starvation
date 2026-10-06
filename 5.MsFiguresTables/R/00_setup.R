@@ -148,10 +148,12 @@ PHENOTYPE_SCALE <- "absolute"
 #   "v2"  mean +/- SD by clone    the traditional plot, every replicate shown
 #   "v3"  posterior interval      median and 95% CrI, clones on the x axis
 #
-# v3 is the default because a reader who has not met posterior densities can
-# still read it. Change this one word to send a different one to main.tex --
-# it is written as figure2_phenotypes.pdf, which is the name main.tex includes.
-FIGURE2_VARIANT <- "v3"
+# v1 is the manuscript figure (Oct 2026): the coauthors preferred the ridges.
+# v3 was the default before that, chosen so a reader who has not met posterior
+# densities could still read it. Change this one word to send a different one
+# to main.tex -- it is written as figure2_phenotypes.pdf, the name main.tex
+# includes.
+FIGURE2_VARIANT <- "v1"
 
 # Whether Figure 2 prints the ancestor caveat on the panel itself. The caveat
 # is real either way and is always written to output/figure2_caption_notes.md;
