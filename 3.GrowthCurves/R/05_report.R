@@ -154,7 +154,7 @@ t3 <- data.frame(
   Origin   = meta$origin,
   Cells    = ifelse(is.na(meta$cell), "–", meta$cell),
   # mutation_full already carries current names; see GENE_SYNONYMS in 00_setup
-  Mutation = c(none = "none", sinR = "sinR", ywcC = "ywcC")[meta$mutation_full],
+  Mutation = meta$genes,   # each clone's own mutations; M79 is not a ywcC mutant
   check.names = FALSE
 )
 

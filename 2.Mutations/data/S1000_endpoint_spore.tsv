@@ -1,7 +1,9 @@
 # Endpoint spore fraction (S1000), the 96-clone GSF1925 run.
 #
-# The full 96-clone variant matrix was not retained. These four mutations are
-# the only surviving record of it, transcribed from the summary table in
+# The full 96-clone matrix has since been supplied by Megan Behringer:
+# data/LT_Heat_Bacillus.compare.tab.xlsx (Oct 2026). It confirms these four
+# mutations and places them in three clones -- 1 (yetA, ylmG), 6 (kdgA) and
+# 95 (levB-aspP). They were originally transcribed from the summary table in
 #   OneDrive_3_7-15-2026/SporeMut_Data_MB/Simulations/STHK/STHK_Bootstrap_29.xlsx
 #   -> sheet "Sheet3", the rows with Treatment == "LTS-S" (frequency 1/96 each).
 #

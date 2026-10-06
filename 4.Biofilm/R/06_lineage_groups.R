@@ -45,10 +45,14 @@ biofilm <- read.csv(file.path(DATA_DIR, "biofil.csv"), stringsAsFactors = FALSE)
   transmute(plate = Plate, well = Replicate, clone = clones,
             OD_corrected = OD550_Corrected)
 
+# m23 and m26 were previously the "spore" group. They are total-fraction clones
+# that carry no mutation, labelled spore only for that reason (see
+# TOTAL_FRACTION_NO_MUTATION in R/00_setup.R), so the group is named for what
+# is actually known about them.
 GROUPS <- list(
   sinR             = c("m17", "m19", "m21", "m41", "m54"),
   `ywcC/epsA-slrR` = c("m4", "m13", "m79"),
-  spore            = c("m23", "m26"))
+  `no mutation`    = c("m23", "m26"))
 
 assign_groups <- function(d) {
   d$group <- NA_character_
@@ -147,30 +151,36 @@ message(sprintf("Plate 1 of the raw file reproduces biofil.csv: %s (%d wells, ma
                                  tolerance = 1e-8)),
                 nrow(check), max(abs(check$OD_corrected - check$OD_corrected_ref))))
 
-GROUPS$spore <- c(GROUPS$spore, "s1", "s6", "s11", "s22", "s51", "s95")
-with_plate2 <- assign_groups(all_strains)
-sc2 <- strain_contrasts(with_plate2)
-
+# Plate 2 holds the six endpoint-spore isolates and nothing else -- no
+# ancestor, no strain shared with plate 1 -- so it cannot be put on plate 1's
+# scale. It used to be pooled into the "spore" group alongside m23 and m26;
+# that rested on m23 and m26 being spores, which they are not.
+#
+# What plate 2 CAN support is a comparison within itself, which needs no
+# bridging: the three spore-fraction isolates carrying a mutation against the
+# three carrying none.
+# Plate 2, row G: S22 reads 0.078 and its neighbouring blank 0.305, against
+# 0.215-0.376 for every other S22 well and 0.059-0.087 for every other plate-2
+# blank. The two wells look swapped at pipetting -- it is in Megan Behringer's
+# original reader grid, so not a transcription error. Blank-corrected, the S22
+# well comes out at 0.001, which on a log scale drags S22 far below its other
+# seven wells. It is dropped; the blank is already handled by the median.
+SWAPPED_WELLS <- data.frame(plate = "plate2", clone = "s22", well = "G")
+spore_frac <- all_strains %>%
+  filter(plate == "plate2") %>%
+  anti_join(SWAPPED_WELLS, by = c("plate", "clone", "well")) %>%
+  mutate(group = ifelse(clone %in% c("s1", "s6", "s95"), "mutation", "no mutation"))
+sc2 <- strain_contrasts(spore_frac)
 sens <- data.frame(
-  contrast = c("sinR vs spore", "spore vs ywcC/epsA-slrR", "sinR vs ywcC/epsA-slrR"),
-  plate1_only = c(pair_p(sc, "sinR", "spore"),
-                  pair_p(sc, "spore", "ywcC/epsA-slrR"),
-                  pair_p(sc, "sinR", "ywcC/epsA-slrR")),
-  with_plate2 = c(pair_p(sc2, "sinR", "spore"),
-                  pair_p(sc2, "spore", "ywcC/epsA-slrR"),
-                  pair_p(sc2, "sinR", "ywcC/epsA-slrR")))
+  contrast = "spore fraction: mutation vs no mutation (plate 2 only)",
+  pair  = sc2$pairs$contrast[1],
+  ratio = sc2$pairs$ratio[1], lower = sc2$pairs$lower[1],
+  upper = sc2$pairs$upper[1], p = sc2$pairs$p[1])
 write.csv(sens, file.path(OUT_DIR, "lineage_groups_plate2_sensitivity.csv"),
           row.names = FALSE)
-
 cat(sprintf(paste0(
-  "\nSensitivity: adding plate 2's six S isolates takes the spore group from\n",
-  "%d strains to %d, and sinR vs spore from P = %.2g to P = %.2g (strain as the\n",
-  "unit, as above). CAUTION: no strain was read on both plates, so a plate\n",
-  "effect cannot be separated from the six S isolates -- any difference between\n",
-  "the plates lands entirely on the spore group. Recorded so the dependence is\n",
-  "visible, not as a result.\n"),
-  summary_tbl$strains[summary_tbl$group == "spore"], length(GROUPS$spore),
-  sens$plate1_only[1], sens$with_plate2[1]))
+  "\nWithin plate 2 (spore fraction only): mutation vs no mutation, ",
+  "P = %.2g. No bridging to plate 1 is needed or attempted.\n"), sens$p))
 
 contrasts <- transmute(sc$pairs, Comparison = contrast, p = p)
 

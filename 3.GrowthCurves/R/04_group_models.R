@@ -81,6 +81,10 @@ fits <- fits[fits$clones %in% ALL_STRAINS, ]
 
 meta <- strain_meta(ALL_STRAINS)
 meta$has_mutation <- ifelse(meta$mutated, "mutation", "none")
+# Fraction x mutation as one four-level factor: the cell-means form of the
+# full interaction model, for the sixteen evolved strains where the two are
+# fully crossed.
+meta$frac_mut <- ifelse(is.na(meta$cell), NA, paste(meta$cell, meta$has_mutation, sep = ":"))
 
 PARAMS <- list(umax = "umax", A = "A", L = "L")
 
@@ -96,46 +100,46 @@ SCOPES <- list(
       list(id = "3", label = "mutation vs none",        grouping = "has_mutation")
     )
   ),
+  # The ten published clones are all from the total fraction. M23 and M26 were
+  # labelled spore only because they carried no mutation; they are total-fraction
+  # clones 23 and 26. So there is no cell-type contrast here, and model 3 is a
+  # clean mutation contrast within one fraction: M23 and M26 against the eight
+  # sinR/ywcC clones.
   list(
-    id = "evolved (10)",
+    id = "total fraction (10)",
     strains = setdiff(MODEL_ORDER, "ancestor"),
-    # model 3 is the same partition as model 4 here and is not repeated
     models = list(
       list(id = "1",  label = "global mean",            grouping = NULL),
-      list(id = "4",  label = "spore vs total",         grouping = "cell"),
-      list(id = "5a", label = "sinR vs ywcC vs none",   grouping = "mutation_full")
+      list(id = "3",  label = "mutation vs none",       grouping = "has_mutation"),
+      list(id = "5a", label = "sinR vs ywcC/epsA-slrR vs none",   grouping = "mutation_full")
     )
   ),
-  # The six endpoint-spore isolates were phenotyped in the same runs but left
-  # out of the published analysis. Adding them is the only way to ask whether
-  # carrying a mutation costs anything, because three of them carry one and
-  # three do not, all within the spore fraction. The eight total-fraction
-  # clones all carry sinR or ywcC, so cell type and regulator mutation stay
-  # confounded with each other; what these strains separate is "has a
-  # mutation" from "came from the total fraction".
+  # With the six endpoint-spore isolates, fraction and mutation are fully
+  # crossed: Total 8 with / 2 without, Spore 3 with / 3 without.
   list(
     id = "evolved + spore isolates (16)",
     strains = setdiff(ALL_STRAINS, "ancestor"),
     models = list(
-      list(id = "1", label = "global mean",           grouping = NULL),
-      list(id = "3", label = "mutation vs none",      grouping = "has_mutation"),
-      list(id = "4", label = "spore vs total",        grouping = "cell")
+      list(id = "1",   label = "global mean",              grouping = NULL),
+      list(id = "3",   label = "mutation vs none",         grouping = "has_mutation"),
+      list(id = "4",   label = "spore vs total fraction",  grouping = "cell"),
+      list(id = "3x4", label = "fraction x mutation",      grouping = "frac_mut")
     )
   ),
   list(
-    id = "spore fraction (8)",
-    strains = meta$clone[!is.na(meta$cell) & meta$cell == "Spore"],
-    models = list(
-      list(id = "1", label = "global mean",           grouping = NULL),
-      list(id = "3", label = "mutation vs none",      grouping = "has_mutation")
-    )
-  ),
-  list(
-    id = "sinR/ywcC (8)",
-    strains = meta$clone[meta$mutation_full %in% c("sinR", "ywcC")],
+    id = "spore fraction (6)",
+    strains = SPORE_ISOLATES,
     models = list(
       list(id = "1", label = "global mean",             grouping = NULL),
-      list(id = "5", label = "sinR vs ywcC",            grouping = "mutation_full")
+      list(id = "3", label = "mutation vs none",        grouping = "has_mutation")
+    )
+  ),
+  list(
+    id = "sinR or ywcC/epsA-slrR (8)",
+    strains = meta$clone[meta$mutation_full %in% c("sinR", LINEAGE_YWCC)],
+    models = list(
+      list(id = "1", label = "global mean",             grouping = NULL),
+      list(id = "5", label = "sinR vs ywcC/epsA-slrR",            grouping = "mutation_full")
     )
   )
 )
