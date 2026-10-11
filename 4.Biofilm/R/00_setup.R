@@ -135,15 +135,15 @@ strain_meta <- function(clones) {
   m
 }
 
-## ---- the ancestor is under question ---------------------------------------
+## ---- the ancestor well -----------------------------------------------------
 # The plate note in OneDrive.../Biofilm/Behringer_Plate1.xlsx calls column 11
-# "B. subtilis 168 delta 6", where data/biofil.csv calls it "Ancestor". Delta 6
-# is a domesticated, biofilm-impaired 168 derivative, not the strain the
-# starvation experiment began from, so everything expressed *relative to the
-# ancestor* is provisional. What does not depend on it: the absolute posteriors,
-# the lineage-group comparison in R/06_lineage_groups.R, and every model fit to
-# the evolved clones alone.
-ANCESTOR_IS_PROVISIONAL <- TRUE
+# "B. subtilis 168 delta 6", where data/biofil.csv calls it "Ancestor". The note
+# was wrong. Megan Behringer, who ran the assay, used the ancestor supplied to
+# her from the starvation experiment; she was not involved in the experiment
+# itself and mislabelled the strain (Oct 2026). The well is the ancestor, so
+# comparisons with it stand. The flag and warn_ancestor() are kept so the
+# caveat can be restored if that ever changes.
+ANCESTOR_IS_PROVISIONAL <- FALSE
 
 warn_ancestor <- function() {
   if (!ANCESTOR_IS_PROVISIONAL) return(invisible(NULL))

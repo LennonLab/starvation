@@ -132,13 +132,10 @@ CELL_SIZE   <- 2.4
 TOTAL_COLOUR <- "#8C1515"
 
 # Figure 2 works on the measured scale rather than relative to the ancestor.
-# The biofilm ancestor is provisional -- data/biofil.csv records it as
-# B. subtilis 168 delta 6, which is probably not this experiment's ancestor --
-# so every relative biofilm value is provisional with it, while the absolute
-# posteriors are unaffected. Growth and biofilm are therefore both shown
-# absolute, which keeps the four panels on one footing and keeps the figure
-# clear of that problem. Set to "relative" to switch back; see 4.Biofilm's
-# README for what that would inherit.
+# This was chosen while the biofilm ancestor was in doubt (the plate note named
+# it B. subtilis 168 delta 6, since found to be a labelling error). With the
+# ancestor confirmed, "relative" is now equally valid; absolute is kept because
+# it shows what was measured, and the ancestor appears as a dashed line.
 PHENOTYPE_SCALE <- "absolute"
 
 # Which version of Figure 2 the manuscript gets. All three are written to
@@ -155,10 +152,8 @@ PHENOTYPE_SCALE <- "absolute"
 # includes.
 FIGURE2_VARIANT <- "v1"
 
-# Whether Figure 2 prints the ancestor caveat on the panel itself. The caveat
-# is real either way and is always written to output/figure2_caption_notes.md;
-# this only controls whether it is set on the figure, which is a decision for
-# the authors rather than for the code.
+# Whether Figure 2 prints an ancestor caveat on the panel itself. Retired: the
+# caveat was the 168 delta 6 label, which was a labelling error. Kept FALSE.
 SHOW_ANCESTOR_FOOTNOTE <- FALSE
 
 save_figure <- function(plot, stem, width, height) {

@@ -87,12 +87,10 @@ write_md(
     "within each set. *P* is a Kenward\u2013Roger F-test against the ",
     "global-mean model on the same strains. Sets of strains are not comparable ",
     "with one another. Model 3 (mutation vs. no mutation) on all eleven strains ",
-    "compares the reference well, m23 and m26 --- none of which carries a ",
-    "mutation --- with the eight *sinR* and *ywcC* clones; among the ten evolved ",
-    "clones it is the same partition as model 4. Models 2 and 3 on all eleven ",
-    "strains include the reference well, recorded as *B. subtilis* 168 ",
-    "\u03946 and probably not this experiment's ancestor; models 4, 5 and ",
-    "5a do not use it.")
+    "compares the ancestor, m23 and m26 --- none of which carries a ",
+    "mutation --- with the eight clones that do. All ten evolved clones are from ",
+    "the whole population, so there is no spore-versus-total contrast on this ",
+    "plate.")
 )
 
 ## ---- Table 2: pairwise group contrasts -------------------------------------
@@ -219,11 +217,9 @@ methods <- c(
     "independent."),
   "",
   paste(
-    "The reference well is recorded as \"Ancestor\" in the assay file but",
-    "named *B. subtilis* 168 Δ6 in the plate record, and is probably not this",
-    "experiment's ancestor. Every comparison that involves it --- ancestor vs.",
-    "evolved, and mutation vs. no mutation on all eleven strains --- is",
-    "provisional. Comparisons among the evolved clones do not use it."),
+    "The plate record names the ancestor well *B. subtilis* 168 Δ6. That was a",
+    "labelling error: the assay used the ancestor supplied from the starvation",
+    "experiment."),
   "",
   "### Software",
   "",
