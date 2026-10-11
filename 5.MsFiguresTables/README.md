@@ -64,12 +64,10 @@ both panels in that row — all four share one strain order.
 ### Why the measured scale, not relative to the ancestor
 
 `PHENOTYPE_SCALE` in `R/00_setup.R` is `"absolute"`. Both scales exist in the
-projects, and the growth parameters would be fine either way, but the biofilm
-ancestor is not: `4.Biofilm/data/biofil.csv` calls the reference well
-"Ancestor" where the original plate record names it *B. subtilis* 168 Δ6,
-which is probably not this experiment's ancestor. Every relative biofilm value
-inherits that, while the absolute posteriors do not. Showing all four panels
-absolute keeps them on one footing and keeps the figure clear of the problem.
+projects. Absolute was chosen while the biofilm ancestor was in doubt — the plate
+note named it *B. subtilis* 168 Δ6, since found to be a mislabelling — and is
+kept because it shows what was measured, with the ancestor as a dashed line in
+both panels.
 
 Set `PHENOTYPE_SCALE <- "relative"` to switch; nothing else needs changing.
 

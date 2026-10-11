@@ -80,10 +80,10 @@ require_objects(b, "ridge_plot", "post", "ABS_ORDER", "rows_abs", "rows_rel",
                 "PLOT_ORDER", "od_labels", "ANCESTOR_IS_PROVISIONAL",
                 what = "4.Biofilm")
 
-# data/biofil.csv records the ancestor as B. subtilis 168 delta 6, which is
-# probably not this experiment's ancestor. The absolute reading is a real
-# measurement of a real strain, so the row stays; what cannot stand in a
-# manuscript figure is calling it the ancestor without qualification.
+# The plate note named the biofilm ancestor B. subtilis 168 delta 6; that was a
+# mislabelling, and the well is the ancestor (4.Biofilm/R/00_setup.R). The
+# caveat machinery below is kept but only fires if ANCESTOR_IS_PROVISIONAL is
+# set back to TRUE there.
 #
 # The mark goes on this panel's own caption rather than on the shared group
 # brackets. The brackets are drawn once per row and are read by the growth

@@ -35,21 +35,16 @@
 #   1   global mean
 #   2   ancestor vs evolved
 #   3   mutation vs no mutation
-#   4   spore vs total
-#   5   sinR vs ywcC (BSU_38220)
-#   5a  sinR vs ywcC vs no mutation
+#   5   sinR vs the ywcC/epsA-slrR lineage
+#   5a  sinR vs ywcC/epsA-slrR vs no mutation
 #
-# Model 3 was previously skipped on the grounds that every evolved isolate
-# carries a mutation. It does not: m23 and m26 carry none. On all eleven
-# strains model 3 is {ancestor, m23, m26} against the eight sinR/ywcC clones.
-# Among the ten evolved clones it coincides with model 4, because the two
-# clones without a mutation are exactly the two spore-fraction clones.
+# There is no model 4 (spore vs total) here: all ten clones on this plate are
+# from the whole population. m23 and m26 were once labelled spore only because
+# they carry no mutation. On all eleven strains model 3 is {ancestor, m23, m26}
+# against the eight clones that carry one.
 #
-# THE REFERENCE WELL. Models 2 and 3 on all eleven strains include the well
-# recorded as "Ancestor", which the plate record names B. subtilis 168 delta 6
-# -- probably not this experiment's ancestor (see warn_ancestor() in
-# 00_setup.R). Both models inherit that. Models 4, 5 and 5a use evolved clones
-# only and do not.
+# THE ANCESTOR WELL. The plate note names it B. subtilis 168 delta 6; that was a
+# labelling error and the well is the experiment's ancestor (see 00_setup.R).
 ################################################################################
 
 ## Locate 00_setup.R whether you are in the project root or in R/.
@@ -217,9 +212,6 @@ print(show[, c("scope", "model", "grouping", "n_groups", "sigma_strain",
 cat("\nNotes\n")
 cat("  * P is a Kenward-Roger F-test against the global mean within the same\n",
     "   strains. The chi-square LRT is kept in model_comparison.csv.\n", sep = "")
-cat("  * Models 2 and 3 on all eleven strains include the reference well, which\n",
-    "   is provisional (168 delta 6). Models 4, 5 and 5a do not use it.\n", sep = "")
-cat("  * Among the ten evolved clones model 3 is identical to model 4.\n", sep = "")
 if (any(comparison$singular)) {
   cat("  * Singular fits: ",
       paste(unique(with(comparison[comparison$singular, ],

@@ -105,11 +105,10 @@ matters, in the relevant project's README:
 - **BSU_22920 is *ypeB*, not *sleC*** — the RefSeq symbol is wrong, and gene
   names are resolved by locus tag with documented overrides in
   `2.Mutations/data/gene_name_overrides.csv`.
-- **The biofilm reference well is provisional.** It is labelled "Ancestor" in the
-  assay file, but the original plate record names it *B. subtilis* 168 Δ6, which
-  is probably not this experiment's ancestor. Absolute values and every
-  comparison among the evolved clones are unaffected; anything relative to the
-  ancestor is not. See `4.Biofilm/README.md`.
+- **The biofilm ancestor well was mislabelled, not misused.** The original plate
+  note names it *B. subtilis* 168 Δ6. Megan Behringer, who ran the assay, used the
+  ancestor supplied from the starvation experiment and wrote the wrong strain in
+  the note (Oct 2026). The well is the ancestor. See `4.Biofilm/README.md`.
 - **The neutral-simulation result turns on effective population size.** The
   census size is now known — the starvation cultures were 25 mL, so
   N = 7.25 × 10⁶ non-spores — and at that size drift does not account for the

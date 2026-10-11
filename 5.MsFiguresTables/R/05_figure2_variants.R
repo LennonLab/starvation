@@ -47,8 +47,9 @@ ancestor_ref <- function(draws) mean(draws[, "ancestor"])
 #   * scale 0.9, so each density stays inside its own row. At scale 2 a ridge
 #     rose two rows above its baseline and the brackets, which are placed at the
 #     baselines, looked shifted onto the wrong clones.
-#   * a reference line in A only. B has none, for the same reason v3 has none:
-#     the biofilm reference well is B. subtilis 168 delta 6, not the ancestor.
+#   * a dashed ancestor line in both panels. (B once had none: the plate note
+#     named the ancestor well B. subtilis 168 delta 6, which turned out to be a
+#     labelling error -- see 4.Biofilm/R/00_setup.R.)
 #   * no tail-probability legend; the shading is explained in the caption.
 #   * brackets on A; B shares A's row order (both ancestor, M4, M13, M79,
 #     M17-M54, M23, M26), so they read straight across.
@@ -64,13 +65,10 @@ v1_bio <- b$ridge_plot(
   log10(b$post$absolute[, b$ABS_ORDER]), b$ABS_ORDER,
   xlab = expression(Biofilm ~ (OD[550])),
   xlim = abs_xlim_for(log10(b$post$quantiles$absolute), b$ABS_ORDER),
-  scale = RIDGE_SCALE, ref = NA,
+  scale = RIDGE_SCALE, ref = ancestor_ref(log10(b$post$absolute)),
   rows = NULL, labels_fn = b$od_labels) +
   theme(legend.position = "none")
 
-# The biofilm reference well (B. subtilis 168 delta 6, not the ancestor) stays
-# in panel B's bottom row for now. Whether to keep it or drop it is with the
-# coauthors; the caption says what it is.
 ## ---- v2: mean +/- SD over replicates, clones on x ---------------------------
 
 v2_umax <- g$mean_sd_plot(g$fits$umax, g$fits$clones, g$PANELS$umax$strip_lab)
@@ -149,14 +147,12 @@ interval_plot <- function(env, quant, raw_value, raw_clone, ylab,
 
 v3_umax <- interval_plot(g, g$post$umax$quantiles$absolute,
                          g$fits$umax, g$fits$clones, g$PANELS$umax$strip_lab)
-# No ancestor line on the biofilm panel. The reference well is recorded as
-# B. subtilis 168 delta 6 and is probably not this experiment's ancestor, and
-# the claim this panel supports -- sinR against ywcC -- does not use it. The
-# growth panel keeps its line, where the ancestor is not in doubt.
+# Both panels carry the ancestor line. The biofilm ancestor well was once in
+# doubt (the plate note said 168 delta 6); that was a labelling error.
 v3_bio  <- interval_plot(b, b$post$quantiles$absolute,
                          b$assay$OD550_Corrected, b$assay$clones,
                          expression(Biofilm ~ (OD[550])), log_y = TRUE,
-                         ancestor_line = FALSE)
+                         ancestor_line = TRUE)
 
 ## ---- write ------------------------------------------------------------------
 

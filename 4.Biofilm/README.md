@@ -44,10 +44,14 @@ Both plates also run in ascending clone order, and in that order the clone after
 M54 is M79 and the clone between S22 and S95 is S51. So "M66" and "S52" are slips
 in the notes, and column 10 — the highest readings on the plate — is **M79**.
 
-Column 11 is different. "B. subtilis 168 delta 6" is a deliberate strain
-description, not a slip, and nothing contradicts it; "Ancestor" was a label added
-in transcription. That well is 168 Δ6, and no comparison with the ancestor is
-made from it.
+Column 11 is the ancestor, and `biofil.csv` is right there too. "B. subtilis 168
+delta 6" looked like a deliberate strain description rather than a slip, and for
+a while the project treated the well as the wrong strain. Megan Behringer then
+confirmed (Oct 2026) that she used the ancestor supplied to her from the
+starvation experiment — she ran the assays but was not involved in the
+experiment itself — and that the note was her mislabelling. All three
+disagreements are therefore errors in the notes, and `biofil.csv` has all three
+right.
 
 M93 and M94 appear in Megan's layout but not in the tubes she sent, so they were
 removed before phenotyping here.
@@ -71,26 +75,14 @@ which is what the original `ywcC/slrR` label in `biofil.csv` meant — and is
 named `ywcC/epsA-slrR` throughout. The per-strain table gives each clone its own
 genes.
 
-### 168 Δ6 vs "Ancestor"
+### The ancestor well
 
-This one is not a slip. Δ6 is a specific domesticated, biofilm-impaired 168
-derivative, so the plate's reference well is not this experiment's ancestor.
-
-**So everything expressed relative to that well is provisional**, because the
-denominator is the wrong strain: the relative ridge figure, the
-`Relative biofilm` column of Table 3, and model 2 (ancestor vs. evolved). The
-manuscript makes no biofilm comparison with the ancestor for this reason.
-
-**What does not depend on it**, and can be used as it stands:
-
-- the absolute posteriors and `fig_biofilm_absolute_dist.pdf`
-- the lineage-group comparison, Table 4 and `fig_biofilm_lineage_groups.pdf` —
-  *sinR* vs *ywcC*/*epsA–slrR* vs no mutation never touches the reference well
-- every model fit to the evolved clones alone (the total-fraction and
-  *sinR* or *ywcC*/*epsA–slrR* scopes)
-
-`R/00_setup.R` prints this at every run. `ANCESTOR_IS_PROVISIONAL` there is the
-flag to clear if the true ancestor is ever read on the same plate as the clones.
+Recorded as *B. subtilis* 168 Δ6 in the plate note, which was a mislabelling (see
+above): it is the experiment's ancestor. So comparisons with it stand — the
+relative ridge figure, the `Relative biofilm` column of Table 3, and model 2
+(ancestor vs. evolved) — and Figure 2B carries the ancestor's dashed line like
+2A. `ANCESTOR_IS_PROVISIONAL` in `R/00_setup.R` is now `FALSE`; the flag and its
+warning are kept so the caveat can be restored if that ever changes.
 
 ## Biofilm by lineage group
 

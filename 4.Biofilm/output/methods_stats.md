@@ -12,7 +12,7 @@ Corrected optical densities span two orders of magnitude across strains, so they
 
 Whether the strain groupings explain variation between strains was tested with linear mixed models (lme4): log OD with one fixed mean per group and a random intercept for strain. Candidate groupings were a single global mean; ancestor vs. evolved; mutation vs. no mutation; spore vs. total; and mutation identity (*sinR*, *ywcC* (BSU_38220), or none). Groupings that apply to a subset of strains were compared against a global-mean model on the same subset, and no comparison is made across subsets. Groupings were compared by AICc (MuMIn) from maximum-likelihood fits, reported as Akaike weights, and tested by a Kenward-Roger F-test against the global-mean model on REML fits (pbkrtest), which gives the reported *P*. Pairwise ratios of group means with 95% confidence intervals and Kenward-Roger *P* values were computed with emmeans, Tukey-adjusted where a grouping has three levels. Throughout, the strain is the unit of replication: the eight wells of a strain are technical replicates and are not treated as independent.
 
-The reference well is recorded as "Ancestor" in the assay file but named *B. subtilis* 168 Δ6 in the plate record, and is probably not this experiment's ancestor. Every comparison that involves it --- ancestor vs. evolved, and mutation vs. no mutation on all eleven strains --- is provisional. Comparisons among the evolved clones do not use it.
+The plate record names the ancestor well *B. subtilis* 168 Δ6. That was a labelling error: the assay used the ancestor supplied from the starvation experiment.
 
 ### Software
 
