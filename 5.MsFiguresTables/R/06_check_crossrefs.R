@@ -24,7 +24,7 @@ PROJ <- local({
 })
 
 args <- commandArgs(trailingOnly = TRUE)
-MS   <- if (length(args) >= 1) args[1] else "~/Desktop/6.Manuscript/main.tex"
+MS   <- if (length(args) >= 1) args[1] else "~/Desktop/6.Manuscript/main_restructured.tex"
 SUPP <- if (length(args) >= 2) args[2] else "~/Desktop/6.Manuscript/supplementary.tex"
 MS   <- path.expand(MS); SUPP <- path.expand(SUPP)
 

@@ -13,10 +13,14 @@
 # Three things this gets right that a naive count does not.
 #
 # 1. Events, not variant rows. Two variants in the same gene carried by the
-#    same clone and no other are one mutational event -- or an alignment
-#    artifact. recX is exactly this case: a 49 bp deletion and a 1 bp
-#    insertion 52 bp apart, both in clone 4 alone. Counted as k = 2 it looks
+#    same clone and no other are one mutational event. recX is exactly this
+#    case: a 49 bp deletion and a 1 bp insertion 52 bp apart, both in clone 4
+#    alone, and in its reads always together (63 of 63 spanning reads;
+#    tools/site_check.py) -- one complex mutation. Counted as k = 2 it looks
 #    significant; counted correctly it is a single event and says nothing.
+#    The converse holds too: one position can carry two events. At 3,922,952
+#    in ywcC clone 4 gained a T and clone 38 lost one, so 01_mutations.R
+#    splits that site and events are keyed on variant_id, not position.
 #
 # 2. Exact CDS lengths, and by position rather than by gene name. The
 #    workbook's names predate the current annotation -- its "ywcC" is slrC
@@ -44,7 +48,7 @@ N_PERM <- 20000L
 
 muts <- read.csv(file.path(DATA_DIR, "mutations.csv"), stringsAsFactors = FALSE)
 geno <- read.csv(file.path(DATA_DIR, "genotypes_total_fraction.csv"),
-                 colClasses = c("character", "integer", "character"))
+                 colClasses = c("character", "integer", "character", "character"))
 
 
 total <- muts[muts$fraction == "S+NS1000", ]
@@ -65,15 +69,24 @@ renamed <- total %>%
 # Within one CDS, variants carried by exactly the same set of clones cannot be
 # shown to be independent; they are counted once.
 
-carriers_key <- function(position) {
-  paste(sort(geno$clone[geno$position == position]), collapse = ",")
+carriers_key <- function(id) {
+  paste(sort(geno$clone[geno$variant_id == id]), collapse = ",")
+}
+
+# A split site is labelled with its change, so the two ywcC events at
+# 3,922,952 read as distinct rows.
+site_label <- function(position, variant_id, change) {
+  lab <- formatC(position, big.mark = ",", format = "d")
+  ifelse(variant_id == as.character(position), lab,
+         sprintf("%s (%s)", lab, change))
 }
 
 events <- total %>%
   filter(coding) %>%
-  mutate(clones = vapply(position, carriers_key, character(1))) %>%
+  mutate(clones = vapply(variant_id, carriers_key, character(1)),
+         site = site_label(position, variant_id, change)) %>%
   group_by(locus_tag, cds_gene, length_bp, clones) %>%
-  summarise(positions = paste(format(position, big.mark = ","), collapse = " + "),
+  summarise(positions = paste(site, collapse = " + "),
             n_variants = n(), .groups = "drop")
 
 write.csv(events, file.path(OUT_DIR, "mutation_events.csv"), row.names = FALSE)
@@ -180,9 +193,9 @@ n_clones   <- FRACTIONS$`S+NS1000`$n
 eps_clones <- geno$clone[geno$position == EXCLUDE_POS]
 p_clade    <- length(eps_clones) / n_clones
 
-variants <- setdiff(unique(geno$position), EXCLUDE_POS)
-side <- vapply(variants, function(p) {
-  cl <- geno$clone[geno$position == p]
+variants <- setdiff(unique(geno$variant_id), as.character(EXCLUDE_POS))
+side <- vapply(variants, function(v) {
+  cl <- geno$clone[geno$variant_id == v]
   if (all(cl %in% eps_clones)) "inside" else
     if (!any(cl %in% eps_clones)) "outside" else "spans"
 }, character(1))

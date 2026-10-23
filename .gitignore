@@ -7,6 +7,13 @@
 # Staged Overleaf upload -- rebuilt by 5.MsFiguresTables/R/04_tables.R
 overleaf/
 
+# Raw reads and the reference genome for 2.Mutations/tools/site_check.py
+# (~470 MB). Public in SRA under PRJNA525711; the script's header has the
+# commands to fetch them again.
+2.Mutations/data/sra/
+*.fq.gz
+*.fastq.gz
+
 # macOS
 .DS_Store
 

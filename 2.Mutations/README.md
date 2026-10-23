@@ -80,7 +80,7 @@ no gene.
 
 The convention is verified rather than assumed: `check_circos_offset()` in
 `R/01_mutations.R` tests the two tracks whose variants also survive in a
-matrix. All 34 total-fraction rows and both S10 rows match at +10,000 and
+matrix. All 34 total-fraction sites and both S10 rows match at +10,000 and
 none at +0. If that ever stops holding, the run stops.
 
 ## Layout
@@ -95,6 +95,7 @@ data/
   ST_Heat.mutations.txt                    check the +/-10 kb convention
   EvolvedBacillus.filtered.xlsx          a separate 65-clone set (see below)
   mutations.csv                          built by R/01: the analysis table
+  sra/                                   reads + reference for tools/site_check.py, not tracked
 R/
   00_setup.R        paths, genome constants, allele-frequency palette
   01_mutations.R    variant matrices -> tidy mutation table
@@ -104,6 +105,8 @@ R/
   06_lineage_structure.R  Fig 2c: co-occurrence and clone backgrounds
   07_parallelism.R  genes hit more often than chance allows
   05_report.R       tables and results text
+tools/
+  site_check.py     indel calls checked against the SRA reads (Python, no aligner)
 run_all.R
 ```
 
@@ -123,6 +126,7 @@ run_all.R
 | `mutation_load_by_clade.csv`, `clones_without_mutations.txt` | private mutations per clone by clade; the ten clones carrying nothing |
 | `parallelism_tests.csv`, `clade_distribution_test.csv` | gene-level Poisson tests; how mutations split between the clades |
 | `clone_mutation_counts.csv` | mutations per clone |
+| `read_check.txt` | three indel calls checked against the deposited reads, from `tools/site_check.py` |
 
 ## Figure 2a
 
@@ -169,10 +173,10 @@ constant size: G = 0 for spores, G = 1000 for non-spores. Mutation rate
 3.28 × 10⁻¹⁰ per base per generation (Sung et al. 2015).
 
 **This belongs in the supplement.** At 1000 stationary generations the model
-predicts ~110 mutations in the total fraction where 34 were found. That is a
+predicts ~110 mutations in the total fraction where 35 were found. That is a
 problem with the assumed number of generations, not with population structure,
 and refitting with two demes would not touch it — the mutations also
-distribute 17/17 across the two clades against 19 expected (P = 0.49), so the
+distribute 17/18 across the two clades against 20 expected (P = 0.40), so the
 data are not asking for a structured model. The spore claim is carried
 analytically above and the selection claim by parallelism below; the site
 frequency spectrum is then a caveat rather than a contradiction.
@@ -191,21 +195,23 @@ the 65-clone file is a failed pooling; this recreation uses the 84-clone matrix
 throughout, which is also what Fig. 2a is drawn from and what the draft's own
 section 4 describes. The 65-clone file is kept in `data/` for reference only.
 
-**"There were also 34 singleton mutations" should be 24.** There are 34
-mutations in the total fraction, 10 of them in more than one clone.
+**"There were also 34 singleton mutations" should be 26.** There are 35
+mutations in the total fraction, at 34 sites, 9 of them in more than one clone.
+One site carries two mutations; see *One position, two events* below.
 
 **The neutral-model conclusion turns on one unmeasured number.** The draft
 reports that mutations in the total fraction are at frequencies "far greater
 than neutrally expected (P < 2.2 × 10⁻¹⁶)". That holds only for a large
 non-spore population. At N = 2.9 × 10⁵ — the equilibrium non-spore density in
-CFU per mL — 1000 generations of drift produce about 7.4 shared mutations by
-chance against the 10 observed, which is not a surprise (P = 0.21). The
+CFU per mL — 1000 generations of drift produce about 7.3 shared mutations by
+chance against the 9 observed, which is not a surprise (P = 0.31). The
 conclusion needs N of order 10⁷ or more, where the expectation drops to 0.4.
 N is a count of cells, not a density, so what is missing is the culture
 volume. At 2.9 × 10⁵ non-spores per mL, roughly 25 mL or more puts N past 10⁷
-and the conclusion holds. `output/null_population_size_sweep.csv` now carries
-the implied volume for each N — this is one measurement away from settled and
-worth settling rather than publishing conditionally.
+and the conclusion holds. The volume has since been confirmed at 25 mL, so the
+census is N = 7.25 × 10⁶. What remains open is the effective size: drift
+accounts for the 9 shared mutations only if it is about 5 × 10⁵ or less, 7% of
+the census. `output/null_population_size_sweep.csv` carries the sweep.
 
 **Choosing 1000 generations is conservative in the opposite direction from the
 draft's reasoning.** The draft picked it "to ensure that any deviation from the
@@ -229,11 +235,11 @@ from five mutational events. At the event level the probability that all five
 landed among the 44% of clones lacking the marker is 0.44⁵ = **0.017** —
 suggestive, not decisive. Both numbers are reported.
 
-**But the clade structure does not distort the counts.** Of the 34 mutations
-other than the marker, 17 fall inside the *epsA-slrR* clade and 17 outside,
-against 19 expected from the clade's size (binomial P = 0.49). And neither
-clade mutates faster (0.28 / 0.20 / 0.41 private mutations per clone, Poisson
-GLM P = 0.49). So clonal structure is *not* inflating allele frequencies, and
+**But the clade structure does not distort the counts.** Of the 35 mutations
+other than the marker, 17 fall inside the *epsA-slrR* clade and 18 outside,
+against 20 expected from the clade's size (binomial P = 0.40). And neither
+clade mutates faster (0.28 / 0.20 / 0.53 private mutations per clone, Poisson
+GLM P = 0.20). So clonal structure is *not* inflating allele frequencies, and
 the earlier worry that it might does not survive checking.
 
 Some mutations do nest — the two *comEC* clones are a strict subset of the
@@ -244,25 +250,33 @@ meaningful but is not: any mutation arising after the split necessarily lands
 on one side.
 
 **Gene-level parallelism is the cleanest evidence, and it needs no
-simulation.** Of the 34 mutations, 27 are coding; collapsing variants that
-share a gene and a carrier set leaves **26 independent events**. Scattered
-across the 3,684,498 bp of coding sequence, *sinR* (336 bp) expects 0.0024 of
+simulation.** Of the 35 mutations, 28 are coding; collapsing variants that
+share a gene and a carrier set leaves **27 independent events**. Scattered
+across the 3,684,498 bp of coding sequence, *sinR* (336 bp) expects 0.0025 of
 them and has five. Family-wise P < 5 × 10⁻⁵ by min-P permutation over all
-4,171 CDS. *ywcC* (*slrC*, 672 bp) has two genuine events, P = 0.009. None of
+4,171 CDS. *ywcC* (*slrC*, 672 bp) has three events against 0.0049 expected,
+also P < 5 × 10⁻⁵. None of
 this depends on allele frequency, population size, or the sample being well
 mixed — unlike both the frequency statement and the neutral simulation the
 manuscript currently leans on. `R/07_parallelism.R`.
 
-**Three corrections that changed the answer:**
+**Four corrections that changed the answer:**
 
 - **Events, not variant rows.** *recX*'s two variants are both in clone 4 and
   no other — a 49 bp deletion at 925,845 and a 1 bp insertion at 925,897, 52 bp
-  apart. That is one mutational event at best and an alignment artifact at the
-  deletion breakpoint at worst. Counted as two it looked significant; counted
-  correctly it drops out entirely. **The draft's "three genes that received
-  multiple independent mutations" is two.** Clone 4 also carries a *ywcC*
-  indel, so one clone accounts for three of the eight indels in this fraction —
-  worth a coverage check if the reads surface.
+  apart. All 63 reads spanning the site carry both changes and none carries the
+  reference, so it is one real, complex mutation. Counted as two it looked
+  significant; counted correctly it drops out entirely. **The draft's "three
+  genes that received multiple independent mutations" is two.**
+- **One position, two events.** The matrix's carrier block records whether a
+  clone differs from the reference, not how. At 3,922,952 in *ywcC* clone 4
+  gained a T in an 8-T run and clone 38 lost one (128 of 130 and 105 of 105
+  spanning reads). Read off the carrier block alone, that was one mutation in
+  two clones; it is two mutations, one in each. `R/01_mutations.R` now reads
+  the allele block too and splits any site whose carriers disagree — this is
+  the only one — and the downstream scripts key on `variant_id` rather than
+  position. *ywcC* goes from two events (P = 0.009) to three (P < 5 × 10⁻⁵),
+  and the shared mutations from ten to nine.
 - **Exact CDS lengths, mapped by position.** `data/NC_000964.3_cds.tsv` is
   extracted from the RefSeq GFF for the accession already in the Methods.
   Mutations are assigned to whatever CDS contains them rather than matched by
@@ -283,9 +297,9 @@ manuscript currently leans on. `R/07_parallelism.R`.
 the number quoted: the genes were nominated by the data, so the right null is a
 permutation. Two versions are computed. The crude one — does *any* gene collect
 this many events? — is dominated by large genes and is *harsher* on a small
-gene than Bonferroni (0.13 vs 0.047 for *ywcC*), which is not what a family-wise
-correction should do. The reported one is min-P, which judges each gene against
-its own length, and gives *ywcC* P = 0.009.
+gene than Bonferroni (0.0014 vs 8 × 10⁻⁵ for *ywcC*), which is not what a
+family-wise correction should do. The reported one is min-P, which judges each
+gene against its own length, and gives *ywcC* P < 5 × 10⁻⁵.
 
 **The two blocks are not the same kind of object**, and Fig. 2c says so.
 *epsA-slrR* is one clade — 47 clones sharing a single ancestral variant, and
@@ -296,13 +310,12 @@ independent mutational events that share only the absence of that variant, so
 it is drawn one shade per allele rather than as a single group.
 
 The third group is labelled **no clade marker**, not "private variants only":
-clone 88's sole mutation is *ypeB*, shared by four clones, and clones 4 and 38
-carry *ywcC* 3,922,952, shared by two. What they have in common is the absence
-of a clade marker, not privacy.
+clone 88's sole mutation is *ypeB*, shared by four clones. What the group has
+in common is the absence of a clade marker, not privacy.
 
 **Neither clade mutates faster.** Counting only private variants, which carry
 no signal of expansion, gives 0.28 mutations per clone in the *epsA-slrR*
-clade, 0.20 in the *sinR* clones and 0.41 in the rest (Poisson GLM P = 0.49).
+clade, 0.20 in the *sinR* clones and 0.53 in the rest (Poisson GLM P = 0.20).
 That rules out the obvious alternative to selection — that one background
 simply accumulates mutations more quickly — and it is a strong negative result
 that the frequency rings cannot show. The row is on Fig. 2c.
@@ -327,11 +340,14 @@ and the mutation rate is 3.28 × 10⁻¹⁰ throughout — the figure in the dra
 results text — while its Methods say 3.2 × 10⁻¹⁰. The difference is 2.5% and
 changes nothing, but one of each should be chosen.
 
-**One endpoint spore call is 860 bp from the excluded marker.** Position
-3,529,121 falls in *epsB*; the excluded variant at 3,529,981 is intergenic
-between *epsA* and *slrR*. Two calls that close in a repeat-rich operon, one of
-them already treated as suspect, deserve an alignment check.
-`output/variants_near_excluded_marker.csv`.
+**Checking calls against the reads.** The whole-population reads are in
+PRJNA525711 (libraries LTMP_*n*). Clone 4 carries three of the reported
+indels, so `tools/site_check.py` counts the reads spanning each of its sites
+and the alleles they carry, in clones 4, 13 and 38 — the three *ywcC*
+carriers, which double as negative controls for each other's sites. It needs
+no aligner. The reads and reference sit in `data/sra/`, which git ignores
+(~470 MB); the script's header has the commands to fetch them again. The
+result is `output/read_check.txt`. Every call checked is real and clonal.
 
 **Ten clones carry no mutation at all**: 23, 26, 32, 43, 46, 52, 70, 74, 87
 and 96. M23 and M26, the two clones representing the spore group in Figure 3,
