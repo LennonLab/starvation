@@ -23,6 +23,10 @@
 # sinR is the exception: distinct alleles at distinct positions in
 # non-overlapping sets of clones is parallelism, and clonal structure does not
 # produce it.
+#
+# Variants are keyed on variant_id, not position: at 3,922,952 in ywcC two
+# clones carry different alleles (see R/01_mutations.R), and keying on the
+# position would merge them into one mutation shared by two clones.
 ################################################################################
 
 ## Locate 00_setup.R whether you are in the project root or in R/.
@@ -31,7 +35,7 @@ if (!length(.setup)) stop("Run this from the mutations project root (or R/).")
 source(.setup[1])
 
 geno <- read.csv(file.path(DATA_DIR, "genotypes_total_fraction.csv"),
-                 colClasses = c("character", "integer", "character"))
+                 colClasses = c("character", "integer", "character", "character"))
 muts <- read.csv(file.path(DATA_DIR, "mutations.csv"), stringsAsFactors = FALSE)
 
 # Every sequenced clone, including the ones carrying no variant at all -- the
@@ -42,12 +46,20 @@ N_CLONES   <- FRACTIONS$`S+NS1000`$n
 stopifnot(length(ALL_CLONES) == N_CLONES,
           all(geno$clone %in% ALL_CLONES))
 
-carriers_of <- function(position) geno$clone[geno$position == position]
+carriers_of <- function(id) geno$clone[geno$variant_id == id]
+
+# Position for display, with the change appended where one site carries two.
+site_of <- function(id) {
+  pos <- geno$position[match(id, geno$variant_id)]
+  lab <- formatC(pos, big.mark = ",", format = "d")
+  ifelse(id == as.character(pos), lab,
+         sprintf("%s %s", lab, substring(id, nchar(pos) + 1)))
+}
 carriers_of_gene <- function(g) unique(geno$clone[geno$gene %in% g])
 
 ## ---- the two backgrounds ---------------------------------------------------
 
-eps_clones  <- carriers_of(EXCLUDE_POS)
+eps_clones  <- carriers_of(as.character(EXCLUDE_POS))
 sinr_clones <- carriers_of_gene("sinR")
 
 # The two blocks are not the same kind of object, and the labels say so. The
@@ -94,7 +106,7 @@ excl <- fisher.test(tab)
 # the event level the question is whether five mutations all landed in the
 # clones that lack epsA-slrR, which is (1 - p)^5 for a clade covering p of
 # the sample -- suggestive, not decisive.
-n_sinr_events <- length(unique(geno$position[geno$gene == "sinR"]))
+n_sinr_events <- length(unique(geno$variant_id[geno$gene == "sinR"]))
 p_clade  <- length(eps_clones) / N_CLONES
 event_p  <- (1 - p_clade)^n_sinr_events
 
@@ -116,14 +128,14 @@ shared <- muts %>%
 # For each shared mutation: which background its carriers belong to, and
 # whether its carriers are contained within some other mutation's carriers.
 nesting <- lapply(seq_len(nrow(shared)), function(i) {
-  p  <- shared$position[i]
+  p  <- shared$variant_id[i]
   cl <- carriers_of(p)
 
   bg <- backgrounds$background[match(cl, backgrounds$clone)]
   bg_label <- if (all(bg == bg[1])) bg[1] else "mixed"
 
   # Any other variant whose carriers contain all of this one's.
-  others <- setdiff(unique(geno$position), p)
+  others <- setdiff(unique(geno$variant_id), p)
   within <- vapply(others, function(q) {
     qc <- carriers_of(q)
     length(qc) > length(cl) && all(cl %in% qc)
@@ -131,12 +143,13 @@ nesting <- lapply(seq_len(nrow(shared)), function(i) {
 
   parents <- others[within]
   parent_lab <- if (!length(parents)) NA_character_ else
-    paste(sprintf("%s@%s", geno$gene[match(parents, geno$position)],
-                  format(parents, big.mark = ",")), collapse = "; ")
+    paste(sprintf("%s@%s", geno$gene[match(parents, geno$variant_id)],
+                  site_of(parents)), collapse = "; ")
 
   data.frame(
     gene = ifelse(is.na(shared$gene[i]), "-", shared$gene[i]),
-    position = p, carriers = shared$carriers[i],
+    position = shared$position[i], variant_id = p,
+    carriers = shared$carriers[i],
     clones = paste(cl, collapse = ","),
     background = bg_label,
     nested_within = parent_lab,
@@ -157,15 +170,15 @@ print(nesting %>%
 # mutations because it mutates more. Counting only private (singleton)
 # variants, which carry no signal of expansion, settles it.
 
-singleton_pos <- geno %>%
+singleton_ids <- geno %>%
   filter(position != EXCLUDE_POS) %>%
-  count(position) %>%
+  count(variant_id) %>%
   filter(n == 1) %>%
-  pull(position)
+  pull(variant_id)
 
 load_df <- backgrounds %>%
   mutate(singletons = vapply(clone, function(cl)
-    sum(geno$position[geno$clone == cl] %in% singleton_pos), integer(1)))
+    sum(geno$variant_id[geno$clone == cl] %in% singleton_ids), integer(1)))
 
 load_summary <- load_df %>%
   group_by(clade = clade3) %>%
@@ -191,14 +204,14 @@ cat("so the difference between clades is not a difference in mutation rate.\n")
 
 sinr_alleles <- geno %>%
   filter(gene == "sinR") %>%
-  group_by(position) %>%
+  group_by(position, variant_id) %>%
   summarise(clones = paste(sort(as.integer(clone)), collapse = ","),
             n = n(), .groups = "drop") %>%
   arrange(position)
 
 overlaps <- combn(nrow(sinr_alleles), 2, function(ij) {
-  a <- carriers_of(sinr_alleles$position[ij[1]])
-  b <- carriers_of(sinr_alleles$position[ij[2]])
+  a <- carriers_of(sinr_alleles$variant_id[ij[1]])
+  b <- carriers_of(sinr_alleles$variant_id[ij[2]])
   length(intersect(a, b))
 })
 
@@ -232,22 +245,24 @@ repeat_genes <- muts %>%
   filter(fraction == "S+NS1000", !is.na(gene)) %>%
   count(gene) %>% filter(n > 1) %>% pull(gene)
 
-show_pos <- sort(unique(c(
-  EXCLUDE_POS,
-  shared$position,
-  geno$position[geno$gene %in% repeat_genes])))
+show_ids <- unique(c(
+  as.character(EXCLUDE_POS),
+  shared$variant_id,
+  geno$variant_id[geno$gene %in% repeat_genes]))
+show_ids <- show_ids[order(geno$position[match(show_ids, geno$variant_id)],
+                           show_ids)]
 
-locus_label <- function(p) sprintf("%s (%s)",
-                                   geno$gene[match(p, geno$position)],
-                                   format(p, big.mark = ","))
+locus_label <- function(id) sprintf("%s (%s)",
+                                    geno$gene[match(id, geno$variant_id)],
+                                    site_of(id))
 
-present <- geno %>% filter(position %in% show_pos)
+present <- geno %>% filter(variant_id %in% show_ids)
 
 # Order clones by genotype within each block, so clones sharing a variant sit
 # together and the nesting is visible; the ordering key is the presence
 # pattern read as a string.
 pattern <- vapply(ALL_CLONES, function(cl) {
-  paste(as.integer(show_pos %in% present$position[present$clone == cl]),
+  paste(as.integer(show_ids %in% present$variant_id[present$clone == cl]),
         collapse = "")
 }, character(1))
 
@@ -273,11 +288,11 @@ BG_COLOURS <- c(
 
 BG_ROW  <- "Background"
 SNG_ROW <- "Private mutations"
-row_levels <- rev(c(BG_ROW, SNG_ROW, locus_label(show_pos)))
+row_levels <- rev(c(BG_ROW, SNG_ROW, locus_label(show_ids)))
 
 tiles <- bind_rows(
   backgrounds %>% transmute(clone, row = BG_ROW, fill = background),
-  present %>% transmute(clone, row = locus_label(position), fill = "mutation")
+  present %>% transmute(clone, row = locus_label(variant_id), fill = "mutation")
 ) %>%
   mutate(clone = factor(clone, levels = clone_order),
          row   = factor(row, levels = row_levels),

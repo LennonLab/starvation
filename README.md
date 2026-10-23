@@ -46,9 +46,9 @@ the only strains that separate the two, and within the spore fraction carrying
 a mutation makes no difference.
 
 The whole-population sample was different: 48 of 84 clones carried at least one
-of 34 mutations. Two genes took more independent mutations than the genome-wide
-rate allows — *sinR* (5 events, P < 5 × 10⁻⁵) and *ywcC* (2 events, P = 0.009),
-both biofilm regulators. That test is the one the argument rests on: it needs no
+of 35 mutations. Two genes took more independent mutations than the genome-wide
+rate allows — *sinR* (5 events) and *ywcC* (3 events), both biofilm regulators
+and both P < 5 × 10⁻⁵. That test is the one the argument rests on: it needs no
 coalescent, no assumption about population size, and no assumption that the
 sample is well mixed.
 

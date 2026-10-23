@@ -1,0 +1,18 @@
+# ywcC 3,922,952: left anchor in genome x1, right anchor x1
+# ywcC 3,922,748: left anchor in genome x1, right anchor x1
+# recX 925,845-925,897: left anchor in genome x1, right anchor x1
+
+== LTMP_4.fq.gz: 1,789,600 reads
+  ywcC 3,922,952         spanning reads  130 | +T (clone 4 call): 128, other (T10): 2
+  ywcC 3,922,748         spanning reads   72 | ref T8: 72
+  recX 925,845-925,897   spanning reads   63 | del49 + insC (clone 4 call): 63
+
+== LTMP_13.fq.gz: 1,341,703 reads
+  ywcC 3,922,952         spanning reads   63 | ref T8: 62, +T (clone 4 call): 1
+  ywcC 3,922,748         spanning reads   49 | -T (clone 13 call): 49
+  recX 925,845-925,897   spanning reads   39 | ref: 36, other: 3
+
+== LTMP_38.fq.gz: 1,711,920 reads
+  ywcC 3,922,952         spanning reads  105 | -T (clone 38 call): 105
+  ywcC 3,922,748         spanning reads   76 | ref T8: 73, -T (clone 13 call): 2, +T: 1
+  recX 925,845-925,897   spanning reads   46 | ref: 43, other: 3

@@ -68,7 +68,11 @@ sci_notation <- function(x) {
   x <- gsub("([<>])\\s*\\$", "$\\1", x)
   # Then: a sign against a plain number. The [^$] guard keeps this off the
   # ones just handled, whose sign now sits immediately after a $.
-  gsub("(^|[^$])([<>])\\s*([0-9])", "\\1$\\2\\3$", x)
+  x <- gsub("(^|[^$])([<>])\\s*([0-9])", "\\1$\\2\\3$", x)
+  # Last, the two text uses: an arrow (A/T -> G/C) and a base substitution
+  # (C>T).
+  x <- gsub(" -> ", " $\\\\rightarrow$ ", x)
+  gsub("([ACGT])>([ACGT])", "\\1\\\\textgreater{}\\2", x)
 }
 
 #' Markdown emphasis. Bold before italic, or ** is eaten as two * markers.
@@ -223,7 +227,8 @@ dir.create(file.path(OVERLEAF, "tables"),  recursive = TRUE, showWarnings = FALS
 # The documents live outside this repository; if they cannot be found, fall
 # back to staging everything and say so.
 TEXT_DIR <- path.expand(Sys.getenv("STARVATION_TEXT", "~/Desktop/6.Manuscript"))
-docs <- file.path(TEXT_DIR, c("main.tex", "supplementary.tex"))
+# main_restructured.tex has been the working draft since 23 Oct 2026.
+docs <- file.path(TEXT_DIR, c("main_restructured.tex", "supplementary.tex"))
 docs <- docs[file.exists(docs)]
 
 wanted <- unique(unlist(lapply(docs, function(d) {

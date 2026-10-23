@@ -17,6 +17,15 @@
 # rings are coloured by. The column layouts differ between files, so the
 # positions are named here rather than reused.
 #
+# The indicator block says whether a clone differs from the reference at a
+# site, not how. At 3,922,952 in ywcC the two carriers hold different alleles:
+# clone 4 has an extra T in an 8-T run and clone 38 one T fewer, which the
+# reads confirm (128 of 130 and 105 of 105 spanning reads; tools/site_check.py).
+# Those are two mutations, each in one clone, not one mutation in two clones.
+# So the allele block is read as well and a site whose carriers disagree is
+# split into one row per allele. Positions then no longer identify a mutation
+# on their own; `variant_id` does, and the downstream scripts key on it.
+#
 # No 96-clone matrix survives for the endpoint spore fraction (the GSF1925 run,
 # 96 BS_Heatkilled libraries), so its four mutations are read from the summary
 # table that does survive -- see the header of data/S1000_endpoint_spore.tsv.
@@ -47,8 +56,13 @@ if (!requireNamespace("readxl", quietly = TRUE)) {
 #' @param n_clones  how many clones the matrix covers
 #' @param first_geno first column of the 0/1 carrier block
 #' @param severity_col,type_col,product_col annotation columns, where present
+#' @param ref_col   column holding the reference allele
+#'
+#' The called-allele block is the n_clones columns just before the carrier
+#' block, in the same clone order; that is checked rather than assumed.
 read_matrix <- function(file, pos_col, gene_col, n_clones, first_geno,
-                        severity_col = NA, type_col = NA, product_col = NA) {
+                        severity_col = NA, type_col = NA, product_col = NA,
+                        ref_col) {
   d <- suppressMessages(
     readxl::read_excel(file.path(DATA_DIR, file), sheet = 1,
                        .name_repair = "minimal"))
@@ -70,16 +84,60 @@ read_matrix <- function(file, pos_col, gene_col, n_clones, first_geno,
     if (is.na(i)) rep(NA_character_, sum(keep)) else as.character(d[[i]][keep])
   }
 
-  list(
-    variants = data.frame(
-      position = as.integer(pos[keep]),
-      gene     = col_or_na(gene_col),
-      carriers = as.integer(total),
-      variant  = col_or_na(type_col),
-      severity = col_or_na(severity_col),
-      product  = col_or_na(product_col),
-      stringsAsFactors = FALSE),
-    genotypes = geno)
+  allele_cols <- seq(first_geno - n_clones, first_geno - 1)
+  if (!identical(names(d)[allele_cols], colnames(geno))) {
+    stop(file, ": the allele block does not line up with the carrier block.")
+  }
+  alleles <- as.matrix(d[keep, allele_cols])
+
+  variants <- data.frame(
+    position = as.integer(pos[keep]),
+    gene     = col_or_na(gene_col),
+    carriers = as.integer(total),
+    variant  = col_or_na(type_col),
+    severity = col_or_na(severity_col),
+    product  = col_or_na(product_col),
+    ref      = col_or_na(ref_col),
+    stringsAsFactors = FALSE)
+
+  # One row per allele carried. Almost every site has a single allele and
+  # passes through unchanged.
+  rows <- lapply(seq_len(nrow(variants)), function(k) {
+    car <- which(geno[k, ] == 1)
+    alt <- alleles[k, car]
+    lapply(unique(alt), function(a) {
+      g <- geno[k, ] * 0
+      g[car[alt == a]] <- 1
+      list(v = transform(variants[k, ], alt = a, carriers = sum(alt == a)), g = g)
+    })
+  })
+  rows <- unlist(rows, recursive = FALSE)
+
+  variants <- bind_rows(lapply(rows, `[[`, "v"))
+  geno <- do.call(rbind, lapply(rows, `[[`, "g"))
+  variants$change <- allele_change(variants$ref, variants$alt)
+  split <- duplicated(variants$position) |
+    duplicated(variants$position, fromLast = TRUE)
+  variants$variant_id <- ifelse(split,
+                                paste0(variants$position, variants$change),
+                                as.character(variants$position))
+
+  list(variants = variants, genotypes = geno)
+}
+
+#' A short description of the change: C>T, +T, -T, -49 bp.
+allele_change <- function(ref, alt) {
+  out <- rep(NA_character_, length(ref))
+  ok <- !is.na(ref) & !is.na(alt)
+  r <- ref[ok]; a <- alt[ok]
+  nr <- nchar(r); na <- nchar(a)
+  short <- function(sign, s) ifelse(nchar(s) <= 3, paste0(sign, s),
+                                    sprintf("%s%d bp", sign, nchar(s)))
+  out[ok] <- ifelse(nr == 1 & na == 1, paste0(r, ">", a),
+             ifelse(na > nr & startsWith(a, r), short("+", substring(a, nr + 1)),
+             ifelse(na < nr & startsWith(r, a), short("-", substring(r, na + 1)),
+                    "complex")))
+  out
 }
 
 ## ---- the three fractions of the starvation experiment ----------------------
@@ -89,11 +147,12 @@ read_matrix <- function(file, pos_col, gene_col, n_clones, first_geno,
 # the positions are given per file rather than reused.
 s10 <- read_matrix("NewControlBacillus.goodcoverage.xlsx",
                    pos_col = 5, gene_col = 3, n_clones = 52, first_geno = 59,
-                   severity_col = 2, product_col = 4)
+                   severity_col = 2, product_col = 4, ref_col = 6)
 
 total <- read_matrix("ControlBacillus.filtered.xlsx",
                      pos_col = 2, gene_col = 7, n_clones = 84, first_geno = 94,
-                     severity_col = 6, type_col = 5, product_col = 8)
+                     severity_col = 6, type_col = 5, product_col = 8,
+                     ref_col = 9)
 
 s1000 <- read.delim(file.path(DATA_DIR, "S1000_endpoint_spore.tsv"),
                     comment.char = "#", stringsAsFactors = FALSE)
@@ -129,7 +188,16 @@ muts <- bind_rows(
              product = s1000$product, stringsAsFactors = FALSE),
   data.frame(fraction = "S+NS1000", total$variants, stringsAsFactors = FALSE)
 ) %>%
-  mutate(fraction = factor(fraction, levels = FRACTION_ORDER))
+  mutate(fraction = factor(fraction, levels = FRACTION_ORDER),
+         variant_id = ifelse(is.na(variant_id), as.character(position),
+                             variant_id))
+
+split_sites <- muts %>% filter(variant_id != as.character(position))
+if (nrow(split_sites)) {
+  message("Sites whose carriers hold different alleles, split into one row per allele:")
+  print(as.data.frame(split_sites[, c("fraction", "position", "gene", "ref",
+                                      "alt", "carriers")]), row.names = FALSE)
+}
 
 excluded <- muts %>% filter(position == EXCLUDE_POS)
 muts     <- muts %>% filter(position != EXCLUDE_POS)
@@ -189,12 +257,14 @@ write.csv(per_clone, file.path(OUT_DIR, "clone_mutation_counts.csv"),
 # the total fraction into two backgrounds.
 
 geno_long <- as.data.frame(total$genotypes) %>%
-  mutate(position = total$variants$position,
-         gene     = total$variants$gene) %>%
-  pivot_longer(-c(position, gene), names_to = "clone", values_to = "carries") %>%
+  mutate(position   = total$variants$position,
+         gene       = total$variants$gene,
+         variant_id = total$variants$variant_id) %>%
+  pivot_longer(-c(position, gene, variant_id), names_to = "clone",
+               values_to = "carries") %>%
   mutate(clone = sub("^Sample_control_", "", clone)) %>%
   filter(carries == 1) %>%
-  select(clone, position, gene)
+  select(clone, position, gene, variant_id)
 
 write.csv(geno_long, file.path(DATA_DIR, "genotypes_total_fraction.csv"),
           row.names = FALSE)

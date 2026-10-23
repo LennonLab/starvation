@@ -30,8 +30,8 @@ sinr_clones <- backgrounds$clone[backgrounds$clade == "sinR"]
 excl_p <- fisher.test(table(backgrounds$clade == "sinR",
                             backgrounds$clade == "epsA-slrR"))$p.value
 mutator_p <- as.numeric(readLines(file.path(OUT_DIR, "mutator_test_p.txt")))
-n_sinr_events <- length(unique(muts$position[muts$fraction == "S+NS1000" &
-                                               muts$gene %in% "sinR"]))
+n_sinr_events <- length(unique(muts$variant_id[muts$fraction == "S+NS1000" &
+                                                 muts$gene %in% "sinR"]))
 event_p <- (1 - length(eps_clones) / FRACTIONS$`S+NS1000`$n)^n_sinr_events
 n_tot_mut <- sum(muts$fraction == "S+NS1000")
 n_occurrences <- sum(muts$carriers[muts$fraction == "S+NS1000"])
@@ -44,11 +44,16 @@ n_events  <- nrow(ev_tbl)
 n_coding  <- sum(ev_tbl$n_variants)
 sinr_len  <- pt$length_bp[pt$cds_gene == "sinR"]
 sinr_exp  <- pt$expected[pt$cds_gene == "sinR"]
-ywcc_p    <- pt$p_permutation[pt$cds_gene == "slrC"]
+ywcc      <- pt[pt$cds_gene == "ywcC", ]
+n_sites   <- length(unique(muts$position[muts$fraction == "S+NS1000"]))
 per_clone <- read.csv(file.path(OUT_DIR, "clone_mutation_counts.csv"), stringsAsFactors = FALSE)
 tests     <- read.csv(file.path(OUT_DIR, "null_tests.csv"), stringsAsFactors = FALSE)
 sweep     <- read.csv(file.path(OUT_DIR, "null_population_size_sweep.csv"), stringsAsFactors = FALSE)
 gens      <- as.numeric(readLines(file.path(OUT_DIR, "generations_needed.txt")))
+# The largest effective size at which drift still accounts for the observed
+# sharing (P >= 0.05), as a share of the census count.
+drift_N   <- max(sweep$N[sweep$p_observed >= 0.05])
+drift_pct <- 100 * drift_N / N_NONSPORE
 
 md_table <- function(df) {
   numeric_only <- vapply(df, function(col)
@@ -131,7 +136,10 @@ write_md(md_table(as.data.frame(t2)), "table2_repeated_genes.md",
            "Endpoint total fraction. Variants in the same gene carried by the ",
            "same clone and no other are counted once, since they cannot be ",
            "shown to be independent -- this is what removes *recX*, whose two ",
-           "variants are both in clone 4 alone. Expected is the number of ",
+           "variants are both in clone 4 alone and always together in its ",
+           "reads. Conversely, the two *ywcC* changes at 3,922,952 are ",
+           "different alleles in different clones and count as two events. ",
+           "Expected is the number of ",
            "events a gene of that length would collect if all events were ",
            "scattered across the coding genome at random. The family-wise ",
            "column is a min-P permutation over all 4,171 CDS, which is the ",
@@ -154,25 +162,33 @@ tS1 <- muts %>%
            !is.na(gene) & gene != Gene  ~ gene,
            TRUE                         ~ "–")) %>%
   select(Fraction, Position, Gene, Legacy, Clones = carriers, Frequency,
-         Variant = variant, Severity = severity, Product = product) %>%
-  mutate(across(c(Variant, Severity, Product), ~ ifelse(is.na(.x), "–", .x)),
+         Change = change, Variant = variant, Severity = severity,
+         Product = product) %>%
+  mutate(across(c(Change, Variant, Severity, Product),
+                ~ ifelse(is.na(.x), "–", .x)),
          Variant = sub("_variant$", "", Variant),
          Product = substr(Product, 1, 46))
 
 write.csv(tS1, file.path(OUT_DIR, "tableS1_all_mutations.csv"), row.names = FALSE)
 write_md(md_table(as.data.frame(tS1)), "tableS1_all_mutations.md",
          "Table S1. Every mutation identified",
-         paste0("One row per mutation — 34 distinct sites in the endpoint ",
-                "total fraction, appearing 63 times across clones. Gene is the ",
-                "current symbol, resolved by position against the RefSeq ",
-                "annotation of NC_000964.3; Legacy is the name the source ",
-                "workbook used, where it differs. **The two *recX* rows are ",
-                "listed separately here but counted once in Table 2**: both ",
-                "are in clone 4 alone, 52 bp apart, so they cannot be shown to ",
-                "be independent events. Variant type and severity are the ",
-                "annotations carried in the source workbooks; the early-spore ",
-                "file records severity but not variant type, and no annotation ",
-                "survives for the endpoint spore fraction."))
+         sprintf(paste0(
+           "One row per mutation — %d in the endpoint total fraction, at %d ",
+           "sites, appearing %d times across clones. Position 3,922,952 in ",
+           "*ywcC* has two rows: one clone gained a T in an 8-T run and ",
+           "another lost one, which the reads confirm. Gene is the ",
+           "current symbol, resolved by position against the RefSeq ",
+           "annotation of NC_000964.3; Legacy is the name the source ",
+           "workbook used, where it differs. Change is the reference-to-",
+           "called allele difference. The two *recX* rows are ",
+           "listed separately here but counted once in the gene-level test: ",
+           "both are in clone 4 alone, 52 bp apart, and every read spanning ",
+           "the site carries both, so they are one complex mutation. Variant type ",
+           "and severity are the ",
+           "annotations carried in the source workbooks; the early-spore ",
+           "file records severity but not variant type, and no annotation ",
+           "survives for the endpoint spore fraction."),
+           n_tot_mut, n_sites, n_occurrences))
 
 ## ---- results text ----------------------------------------------------------
 
@@ -269,15 +285,15 @@ results <- c(
     "cultures were %d mL (Shoemaker et al. 2021), so at %.1f x 10^5^ non-spores",
     "per mL that is N = %.2e. The neutral model then expects %.2f mutations in",
     "more than one clone against the %d observed (P = %s): drift over 1000",
-    "generations does not produce sharing at these frequencies. The result is",
-    "not delicate -- it would take a culture under about 5 mL for drift alone",
-    "to account for the observed sharing, and the sweep in",
+    "generations does not produce sharing at these frequencies. Drift alone",
+    "accounts for the observed sharing only if the effective size is about",
+    "%.1e or less, %.0f%% of the census count; the sweep in",
     "`output/null_population_size_sweep.csv` shows how far it travels. An",
     "earlier version of this analysis read N as a per-mL density and reached",
     "the opposite conclusion."),
     CULTURE_VOL_ML, DENS_NONSPORE / 1e5, N_NONSPORE,
     tot_test$expected_shared, tot_test$observed_shared,
-    format.pval(tot_test$p_value, digits = 3)),
+    format.pval(tot_test$p_value, digits = 3), drift_N, drift_pct),
   "",
   sprintf(paste(
     "Independent of that, for a single mutant lineage to reach the observed",
@@ -344,15 +360,19 @@ results <- c(
     sinr_len, sinr_exp, format(n_cds, big.mark = ","), "5 x 10^-5^"),
   "",
   sprintf(paste(
-    "*ywcC* -- *slrC* in the current annotation -- is hit twice, at 3,922,748",
-    "in one clone and 3,922,952 in two others, giving a family-wise",
-    "P = %.3f. *recX* does **not** belong on this list, though the draft",
-    "names it: both of its variants, a 49 bp deletion at 925,845 and a 1 bp",
-    "insertion at 925,897, are carried by clone 4 and no other clone. Fifty-two",
-    "bases apart in a single clone, they are one mutational event at best and",
-    "an alignment artifact around the deletion breakpoint at worst. Two genes",
-    "show parallelism, not three."),
-    ywcc_p),
+    "*ywcC* -- *slrC* in the current annotation -- is hit %d times, all",
+    "frameshifts in 8-T runs: a T lost at 3,922,748 in clone 13, and at",
+    "3,922,952 a T gained in clone 4 and a T lost in clone 38. The last two",
+    "share a position but not an allele, so they are two events, not one",
+    "mutation in two clones; the reads confirm both. Against %.4f expected,",
+    "the family-wise P is %s. *recX* does **not** belong on this list, though",
+    "the draft names it: both of its variants, a 49 bp deletion at 925,845",
+    "and a 1 bp insertion at 925,897, are carried by clone 4 and no other",
+    "clone, and every read spanning the site carries both. They are one",
+    "complex mutation. Two genes show parallelism, not three."),
+    ywcc$events, ywcc$expected,
+    ifelse(ywcc$p_permutation == 0, "below 5 x 10^-5^",
+           sprintf("%.2g", ywcc$p_permutation))),
   "",
   paste(
     "This argument needs no coalescent, no assumption about population size",
@@ -389,9 +409,10 @@ results <- c(
     "describe different sequencing sets. This recreation uses the 84-clone",
     "matrix throughout, for consistency with the figure."),
   "",
-  paste(
-    "- **\"There were also 34 singleton mutations\"** should be 24. There are 34",
-    "mutations in total, 10 of them in more than one clone."),
+  sprintf(paste(
+    "- **\"There were also 34 singleton mutations\"** should be %d. There are %d",
+    "mutations in total, %d of them in more than one clone."),
+    get("S+NS1000", "singletons"), n_tot_mut, get("S+NS1000", "shared")),
   "",
   paste(
     "- **The neutral-model conclusion is conditional**, as set out above. The",
@@ -401,10 +422,12 @@ results <- c(
   paste(
     "- **The draft names three genes with multiple independent mutations; it",
     "is two.** *recX*'s two variants are both in clone 4 alone, 52 bp apart,",
-    "one of them a 49 bp deletion -- one event, or an artifact at the deletion",
-    "breakpoint. Clone 4 also carries a *ywcC* indel, so a single clone",
-    "accounts for three of the eight indels reported in this fraction; worth a",
-    "coverage check if the reads can be found."),
+    "one of them a 49 bp deletion -- one event. Clone 4 also carries a *ywcC*",
+    "indel, so the reads were checked (`tools/site_check.py`): all 63 reads",
+    "across *recX* carry both changes, and 128 of 130 across the *ywcC* site",
+    "carry the insertion. Both are real. The same check showed that the",
+    "draft's two *ywcC* events are three: clone 38's change at 3,922,952 is a",
+    "deletion where clone 4's is an insertion."),
   "",
   paste(
     "- **The omission of the other high-frequency variants is defensible but",
@@ -420,8 +443,8 @@ results <- c(
     "- **One variant is excluded.** The variant at position %s is carried by 47",
     "of the 84 total-fraction clones (56%%). It is far too common to have arisen",
     "during the experiment and was excluded from the published figure; it is",
-    "excluded here too, which is what leaves 34 mutations."),
-    format(EXCLUDE_POS, big.mark = ",")),
+    "excluded here too, which is what leaves %d mutations."),
+    format(EXCLUDE_POS, big.mark = ","), n_tot_mut),
   "",
   paste(
     "- **Two constants differ from the draft.** The equilibrium population is",
@@ -438,7 +461,7 @@ results <- c(
     "the 96-clone GSF1925 run (see `data/S1000_endpoint_spore.tsv`):",
     "*yetA* 777,008; *ylmG* 1,611,379; *kdgA* 2,323,251; and *levB*–*aspP*",
     "3,539,121. The offset is verified against the two tracks whose variants",
-    "also survive in a matrix — all 34 total-fraction rows and both S10 rows",
+    "also survive in a matrix — all 34 total-fraction sites and both S10 rows",
     "match at +10,000 and none at +0 — and is asserted at every run.",
     "This retires an earlier caveat: the fourth call appeared to sit 860 bp",
     "from the excluded *epsA*–*slrR* marker and inside *epsB*, which looked",

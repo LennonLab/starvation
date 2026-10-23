@@ -120,8 +120,10 @@ interval_plot <- function(env, quant, raw_value, raw_clone, ylab,
   }
 
   ggplot() +
-    geom_jitter(data = raw, aes(x, value), width = 0.13, height = 0,
-                colour = "grey78", size = 2.4, alpha = 0.75) +
+    # Seeded, so a rerun redraws the same points rather than a new jitter.
+    geom_point(data = raw, aes(x, value),
+               position = position_jitter(width = 0.13, height = 0, seed = 1),
+               colour = "grey78", size = 2.4, alpha = 0.75) +
     (if (ancestor_line)
        geom_hline(yintercept = est$mid[match("ancestor", ord)],
                   linetype = "dashed", colour = "grey35") else NULL) +

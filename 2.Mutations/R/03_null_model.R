@@ -222,6 +222,7 @@ print(tests %>%
 # the volume is known, so a larger N would describe a culture that does not exist.
 sweep_N <- sort(unique(c(2.9e5, 4e5, 5e5, 1e6, 1.33e6, N_NONSPORE)))
 f <- SIM[["S+NS1000"]]
+obs_total <- tests[tests$fraction == "S+NS1000", ]
 
 sweep <- bind_rows(lapply(sweep_N, function(N) {
   reps <- replicate(N_ITER, one_rep(f$n, N, f$G), simplify = FALSE)
@@ -233,7 +234,9 @@ sweep <- bind_rows(lapply(sweep_N, function(N) {
     expected_shared = exp_shared,
     iterations_with_any_shared = sum(shared > 0),
     max_carriers = max(c(0L, unlist(reps))),
-    p_observed_10 = stats::ppois(9, max(exp_shared, 1e-12), lower.tail = FALSE),
+    # P of at least the observed number of shared mutations
+    p_observed = stats::ppois(obs_total$observed_shared - 1,
+                              max(exp_shared, 1e-12), lower.tail = FALSE),
     stringsAsFactors = FALSE)
 }))
 
@@ -246,20 +249,21 @@ write.csv(sweep, file.path(OUT_DIR, "null_population_size_sweep.csv"),
           row.names = FALSE)
 
 cat("\nSensitivity to the non-spore population size (S+NS1000, G = 1000)\n")
-cat("Observed: 34 mutations, 10 carried by more than one clone.\n")
+cat(sprintf("Observed: %d mutations, %d carried by more than one clone.\n",
+            obs_total$observed_mutations, obs_total$observed_shared))
 cat(sprintf(paste0(
   "N is a count of cells, not a density. The culture was %d mL at %.1e\n",
   "non-spores per mL, so N = %.2e; the row at that N is the experiment. The\n",
-  "sweep is kept to show how far the conclusion travels: it needs a volume\n",
-  "below about 5 mL before drift alone can produce the observed sharing.\n\n"),
+  "sweep is kept to show how far the conclusion travels: drift alone produces\n",
+  "the observed sharing only at effective sizes well below the census count.\n\n"),
   CULTURE_VOL_ML, DENS_NONSPORE, N_NONSPORE))
 print(sweep %>%
         mutate(N = sprintf("%.1e", N),
                implied_volume_mL = sprintf("%.1f", implied_volume_mL),
                mean_mutations = sprintf("%.1f", mean_mutations),
                expected_shared = sprintf("%.2f", expected_shared),
-               p_observed_10 = format.pval(p_observed_10, digits = 3,
-                                           eps = 2.2e-16)),
+               p_observed = format.pval(p_observed, digits = 3,
+                                        eps = 2.2e-16)),
       row.names = FALSE)
 
 ## ---- how many generations would the observed frequency need? ---------------
