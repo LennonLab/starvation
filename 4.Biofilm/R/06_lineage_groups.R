@@ -229,7 +229,8 @@ grp_est$group <- factor(grp_est$group, levels = summary_tbl$group)
 strain_means$group <- factor(strain_means$group, levels = summary_tbl$group)
 
 fig <- ggplot(grouped, aes(group, OD_corrected)) +
-  geom_jitter(width = 0.14, height = 0, colour = "grey85", size = 1.6, alpha = 0.8) +
+  geom_point(position = position_jitter(width = 0.14, height = 0, seed = 1),
+             colour = "grey85", size = 1.6, alpha = 0.8) +
   geom_point(data = strain_means, aes(group, OD), colour = "grey45", size = 2.6,
              position = position_nudge(x = 0.22)) +
   geom_errorbar(data = grp_est, aes(x = group, ymin = lower, ymax = upper),

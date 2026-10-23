@@ -145,8 +145,8 @@ mean_sd_plot <- function(values, clones, ylab, fig_height = 5.4,
   frac    <- b_start + b_step * (length(rows) - 1) + b_gap
 
   p <- ggplot(d, aes(x = x, y = value)) +
-    geom_jitter(width = 0.13, height = 0, colour = "grey72", size = 2.6,
-                alpha = 0.75) +
+    geom_point(position = position_jitter(width = 0.13, height = 0, seed = 1),
+               colour = "grey72", size = 2.6, alpha = 0.75) +
     geom_errorbar(data = s, aes(x = x, y = mean, ymin = mean - sd,
                                 ymax = mean + sd),
                   width = 0.16, linewidth = 0.6, colour = "black") +
